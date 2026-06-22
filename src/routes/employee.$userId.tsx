@@ -143,7 +143,7 @@ function EmployeeDetail() {
                   border: "1px solid oklch(0.93 0.005 260)",
                   fontSize: 12,
                 }}
-                formatter={(v: number, n: string) => [`${v} h`, n === "active" ? "Aktivní" : "Nečinný"]}
+                formatter={(v: number, n: string) => [formatHours(v), n === "active" ? "Aktivní" : "Nečinný"]}
               />
               <Bar dataKey="active" fill="oklch(0.72 0.17 152)" radius={[6, 6, 0, 0]} maxBarSize={36} />
             </BarChart>
