@@ -95,7 +95,7 @@ function TeamOverview() {
         <StatCard
           icon={<Activity className="h-4 w-4" />}
           label="Průměrný aktivní čas"
-          value={`${avgActive.toFixed(1)} h`}
+          value={formatHours(avgActive)}
           hint="napříč týmem"
         />
         <StatCard
