@@ -197,8 +197,8 @@ function EmployeeDetail() {
                         <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                           <div className="h-full bg-active rounded-full" style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="text-xs tabular-nums w-16 text-right text-muted-foreground">
-                          {a.active_min.toFixed(1)} min
+                        <span className="text-xs tabular-nums w-20 text-right text-muted-foreground">
+                          {formatMinutes(a.active_min)}
                         </span>
                       </div>
                     </td>
