@@ -21,6 +21,7 @@ import {
 } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatHours, formatMinutes } from "@/lib/utils";
 
 export const Route = createFileRoute("/employee/$userId")({
   head: ({ params }) => ({
@@ -96,19 +97,19 @@ function EmployeeDetail() {
         <Stat
           icon={<Clock className="h-4 w-4 text-active" />}
           label="Aktivní čas dnes"
-          value={`${(summary?.active_hours ?? 0).toFixed(2)} h`}
+          value={formatHours(summary?.active_hours ?? 0)}
           accent="active"
         />
         <Stat
           icon={<Pause className="h-4 w-4 text-idle" />}
           label="Čas nečinnosti"
-          value={`${(summary?.idle_hours ?? 0).toFixed(2)} h`}
+          value={formatHours(summary?.idle_hours ?? 0)}
           accent="idle"
         />
         <Stat
           icon={<Timer className="h-4 w-4 text-muted-foreground" />}
           label="Celkem sledováno"
-          value={`${(summary?.total_tracked_hours ?? 0).toFixed(2)} h`}
+          value={formatHours(summary?.total_tracked_hours ?? 0)}
         />
       </div>
 
@@ -142,7 +143,7 @@ function EmployeeDetail() {
                   border: "1px solid oklch(0.93 0.005 260)",
                   fontSize: 12,
                 }}
-                formatter={(v: number, n: string) => [`${v} h`, n === "active" ? "Aktivní" : "Nečinný"]}
+                formatter={(v: number, n: string) => [formatHours(v), n === "active" ? "Aktivní" : "Nečinný"]}
               />
               <Bar dataKey="active" fill="oklch(0.72 0.17 152)" radius={[6, 6, 0, 0]} maxBarSize={36} />
             </BarChart>
@@ -196,8 +197,8 @@ function EmployeeDetail() {
                         <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                           <div className="h-full bg-active rounded-full" style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="text-xs tabular-nums w-16 text-right text-muted-foreground">
-                          {a.active_min.toFixed(1)} min
+                        <span className="text-xs tabular-nums w-20 text-right text-muted-foreground">
+                          {formatMinutes(a.active_min)}
                         </span>
                       </div>
                     </td>
@@ -215,8 +216,8 @@ function EmployeeDetail() {
               <div key={cat} className="flex items-center justify-between py-2 border-b last:border-0">
                 <Badge variant="outline" className={`${CATEGORY_COLORS[cat] ?? ""} font-medium`}>{cat}</Badge>
                 <div className="text-right">
-                  <div className="text-sm font-medium tabular-nums">{v.active_min.toFixed(0)} min</div>
-                  <div className="text-[11px] text-muted-foreground tabular-nums">+ {v.idle_min.toFixed(0)} min nečinný</div>
+                  <div className="text-sm font-medium tabular-nums">{formatMinutes(v.active_min)}</div>
+                  <div className="text-[11px] text-muted-foreground tabular-nums">+ {formatMinutes(v.idle_min)} nečinný</div>
                 </div>
               </div>
             ))}

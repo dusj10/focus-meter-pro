@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatHours } from "@/lib/utils";
 import { fetchSummary, mockSummary, TEAM, type UserSummary } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
@@ -95,14 +95,14 @@ function TeamOverview() {
         <StatCard
           icon={<Activity className="h-4 w-4" />}
           label="Průměrný aktivní čas"
-          value={`${avgActive.toFixed(1)} h`}
+          value={formatHours(avgActive)}
           hint="napříč týmem"
         />
         <StatCard
           icon={<TrendingUp className="h-4 w-4" />}
           label="Nejproduktivnější"
           value={top?.name.split(" ")[0] ?? "—"}
-          hint={`${(top?.summary?.active_hours ?? 0).toFixed(1)} h aktivní`}
+          hint={`${formatHours(top?.summary?.active_hours ?? 0)} aktivní`}
         />
       </div>
 
@@ -162,8 +162,8 @@ function TeamOverview() {
                               style={{ width: `${Math.min(pct, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs font-medium tabular-nums w-12 text-right">
-                            {active.toFixed(1)} h
+                          <span className="text-xs font-medium tabular-nums w-16 text-right">
+                            {formatHours(active)}
                           </span>
                         </div>
                       </Link>
@@ -172,7 +172,7 @@ function TeamOverview() {
                       <Link to="/employee/$userId" params={{ userId: m.id }}>
                         <span className="text-sm tabular-nums text-muted-foreground">
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-idle mr-2 align-middle" />
-                          {idle.toFixed(1)} h
+                          {formatHours(idle)}
                         </span>
                       </Link>
                     </td>
