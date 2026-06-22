@@ -216,8 +216,8 @@ function EmployeeDetail() {
               <div key={cat} className="flex items-center justify-between py-2 border-b last:border-0">
                 <Badge variant="outline" className={`${CATEGORY_COLORS[cat] ?? ""} font-medium`}>{cat}</Badge>
                 <div className="text-right">
-                  <div className="text-sm font-medium tabular-nums">{v.active_min.toFixed(0)} min</div>
-                  <div className="text-[11px] text-muted-foreground tabular-nums">+ {v.idle_min.toFixed(0)} min nečinný</div>
+                  <div className="text-sm font-medium tabular-nums">{formatMinutes(v.active_min)}</div>
+                  <div className="text-[11px] text-muted-foreground tabular-nums">+ {formatMinutes(v.idle_min)} nečinný</div>
                 </div>
               </div>
             ))}
