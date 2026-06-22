@@ -102,7 +102,7 @@ function TeamOverview() {
           icon={<TrendingUp className="h-4 w-4" />}
           label="Nejproduktivnější"
           value={top?.name.split(" ")[0] ?? "—"}
-          hint={`${(top?.summary?.active_hours ?? 0).toFixed(1)} h aktivní`}
+          hint={`${formatHours(top?.summary?.active_hours ?? 0)} aktivní`}
         />
       </div>
 
