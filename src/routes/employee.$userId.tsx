@@ -97,19 +97,19 @@ function EmployeeDetail() {
         <Stat
           icon={<Clock className="h-4 w-4 text-active" />}
           label="Aktivní čas dnes"
-          value={`${(summary?.active_hours ?? 0).toFixed(2)} h`}
+          value={formatHours(summary?.active_hours ?? 0)}
           accent="active"
         />
         <Stat
           icon={<Pause className="h-4 w-4 text-idle" />}
           label="Čas nečinnosti"
-          value={`${(summary?.idle_hours ?? 0).toFixed(2)} h`}
+          value={formatHours(summary?.idle_hours ?? 0)}
           accent="idle"
         />
         <Stat
           icon={<Timer className="h-4 w-4 text-muted-foreground" />}
           label="Celkem sledováno"
-          value={`${(summary?.total_tracked_hours ?? 0).toFixed(2)} h`}
+          value={formatHours(summary?.total_tracked_hours ?? 0)}
         />
       </div>
 
