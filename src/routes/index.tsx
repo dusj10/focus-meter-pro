@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatHours } from "@/lib/utils";
 import { fetchSummary, mockSummary, TEAM, type UserSummary } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
