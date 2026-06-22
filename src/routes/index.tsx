@@ -162,8 +162,8 @@ function TeamOverview() {
                               style={{ width: `${Math.min(pct, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs font-medium tabular-nums w-12 text-right">
-                            {active.toFixed(1)} h
+                          <span className="text-xs font-medium tabular-nums w-16 text-right">
+                            {formatHours(active)}
                           </span>
                         </div>
                       </Link>
@@ -172,7 +172,7 @@ function TeamOverview() {
                       <Link to="/employee/$userId" params={{ userId: m.id }}>
                         <span className="text-sm tabular-nums text-muted-foreground">
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-idle mr-2 align-middle" />
-                          {idle.toFixed(1)} h
+                          {formatHours(idle)}
                         </span>
                       </Link>
                     </td>
