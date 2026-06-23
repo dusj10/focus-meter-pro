@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
 import { Calendar as CalendarIcon, Users, Activity, TrendingUp, ChevronRight } from "lucide-react";
@@ -10,57 +10,90 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatHours } from "@/lib/utils";
-import { fetchSummary, mockSummary, TEAM, type UserSummary } from "@/lib/api";
+import {
+  fetchSummary,
+  mockSummary,
+  TEAM,
+  aggregateSummaries,
+  getRangeDays,
+  getRangeLabel,
+  type RangeKind,
+  type UserSummary,
+} from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Přehled týmu — HomeOffice Checker" },
-      { name: "description", content: "Dnešní aktivita vašeho týmu na jednom místě." },
+      { name: "description", content: "Aktivita vašeho týmu na jednom místě." },
     ],
   }),
   component: TeamOverview,
 });
 
+const RANGE_LABELS: Record<RangeKind, { unit: string; suffix: string }> = {
+  day: { unit: "dnes", suffix: "dnes" },
+  week: { unit: "tento týden", suffix: "tento týden" },
+  month: { unit: "tento měsíc", suffix: "tento měsíc" },
+};
+
 function TeamOverview() {
   const navigate = useNavigate();
   const [date, setDate] = useState<Date>(new Date(2026, 5, 22));
-  const [range, setRange] = useState("day");
-  const day = format(date, "yyyy-MM-dd");
+  const [range, setRange] = useState<RangeKind>("day");
 
-  const queries = TEAM.map((m) =>
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useQuery({
-      queryKey: ["summary", m.id, day],
-      queryFn: () =>
-        m.id === "honza" ? fetchSummary(m.id, day) : Promise.resolve(mockSummary(m.id, day)),
-    }),
+  const days = useMemo(() => getRangeDays(range, date), [range, date]);
+
+  // Flat list of {userId, day} queries for all team members across the range
+  const tasks = useMemo(
+    () => TEAM.flatMap((m) => days.map((d) => ({ id: m.id, day: d }))),
+    [days],
   );
 
-  const members = TEAM.map((m, i) => ({
-    ...m,
-    summary: queries[i].data?.users[m.id] as UserSummary | undefined,
-    loading: queries[i].isLoading,
-  }));
+  const results = useQueries({
+    queries: tasks.map((t) => ({
+      queryKey: ["summary", t.id, t.day],
+      queryFn: () =>
+        t.id === "honza" && range === "day"
+          ? fetchSummary(t.id, t.day).catch(() => mockSummary(t.id, t.day))
+          : Promise.resolve(mockSummary(t.id, t.day)),
+      staleTime: 60_000,
+    })),
+  });
 
-  const activeToday = members.filter((m) => (m.summary?.active_hours ?? 0) > 0.05).length;
+  const members = TEAM.map((m) => {
+    const summaries: UserSummary[] = [];
+    tasks.forEach((t, i) => {
+      if (t.id !== m.id) return;
+      const s = results[i].data?.users[m.id];
+      if (s) summaries.push(s);
+    });
+    return { ...m, summary: aggregateSummaries(summaries) };
+  });
+
+  const activeCount = members.filter((m) => m.summary.active_hours > 0.05).length;
   const avgActive =
-    members.reduce((s, m) => s + (m.summary?.active_hours ?? 0), 0) / Math.max(members.length, 1);
-  const top = [...members].sort(
-    (a, b) => (b.summary?.active_hours ?? 0) - (a.summary?.active_hours ?? 0),
-  )[0];
+    members.reduce((s, m) => s + m.summary.active_hours, 0) / Math.max(members.length, 1);
+  const top = [...members].sort((a, b) => b.summary.active_hours - a.summary.active_hours)[0];
+
+  const labels = RANGE_LABELS[range];
+  const rangeLabel = getRangeLabel(range, date);
+  const subtitle =
+    range === "day"
+      ? format(date, "EEEE d. MMMM yyyy", { locale: cs })
+      : range === "week"
+        ? `Týden ${rangeLabel}`
+        : rangeLabel.charAt(0).toUpperCase() + rangeLabel.slice(1);
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Přehled týmu</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Acme s.r.o. · {format(date, "EEEE d. MMMM yyyy", { locale: cs })}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Acme s.r.o. · {subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Tabs value={range} onValueChange={setRange}>
+          <Tabs value={range} onValueChange={(v) => setRange(v as RangeKind)}>
             <TabsList>
               <TabsTrigger value="day">Den</TabsTrigger>
               <TabsTrigger value="week">Týden</TabsTrigger>
@@ -71,7 +104,7 @@ function TeamOverview() {
             <PopoverTrigger asChild>
               <Button variant="outline" className="justify-start text-left font-normal gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                {format(date, "d. M. yyyy")}
+                {rangeLabel}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -89,21 +122,21 @@ function TeamOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           icon={<Users className="h-4 w-4" />}
-          label="Aktivní členové dnes"
-          value={`${activeToday} / ${TEAM.length}`}
+          label={`Aktivní členové ${labels.unit}`}
+          value={`${activeCount} / ${TEAM.length}`}
           hint="zaměstnanců sledováno"
         />
         <StatCard
           icon={<Activity className="h-4 w-4" />}
           label="Průměrný aktivní čas"
           value={formatHours(avgActive)}
-          hint="napříč týmem"
+          hint={`napříč týmem ${labels.suffix}`}
         />
         <StatCard
           icon={<TrendingUp className="h-4 w-4" />}
           label="Nejproduktivnější"
           value={top?.name.split(" ")[0] ?? "—"}
-          hint={`${formatHours(top?.summary?.active_hours ?? 0)} aktivní`}
+          hint={`${formatHours(top?.summary.active_hours ?? 0)} aktivní`}
         />
       </div>
 
@@ -126,12 +159,13 @@ function TeamOverview() {
             </thead>
             <tbody>
               {members.map((m) => {
-                const active = m.summary?.active_hours ?? 0;
-                const idle = m.summary?.idle_hours ?? 0;
-                const total = Math.max(active + idle, 1);
-                const pct = (active / 8) * 100;
-                const topApp = m.summary?.apps
-                  ?.slice()
+                const active = m.summary.active_hours;
+                const idle = m.summary.idle_hours;
+                // Scale progress bar to range max: 8h day, 40h week, 160h month
+                const max = range === "day" ? 8 : range === "week" ? 40 : 160;
+                const pct = (active / max) * 100;
+                const topApp = m.summary.apps
+                  .slice()
                   .sort((a, b) => b.active_min - a.active_min)[0]?.app;
                 const isActive = active > 0.05;
                 return (
@@ -159,7 +193,7 @@ function TeamOverview() {
                             style={{ width: `${Math.min(pct, 100)}%` }}
                           />
                         </div>
-                        <span className="text-xs font-medium tabular-nums w-16 text-right">
+                        <span className="text-xs font-medium tabular-nums w-20 text-right">
                           {formatHours(active)}
                         </span>
                       </div>
