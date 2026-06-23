@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery, useQueries } from "@tanstack/react-query";
+import { useState } from "react";
 import { ArrowLeft, Clock, Pause, Timer } from "lucide-react";
 import { format, subDays } from "date-fns";
 import {
@@ -175,15 +176,7 @@ function EmployeeDetail() {
                   <tr key={a.raw} className="border-b last:border-0">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                          {icon ? (
-                            <img src={icon} alt={a.app} className="w-4 h-4" />
-                          ) : (
-                            <span className="text-[10px] font-semibold text-muted-foreground">
-                              {a.app.slice(0, 2).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
+                        <AppIcon app={a.app} icon={icon} />
                         <span className="font-medium">{a.app}</span>
                       </div>
                     </td>
@@ -227,6 +220,32 @@ function EmployeeDetail() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function AppIcon({ app, icon }: { app: string; icon: string | null }) {
+  const [error, setError] = useState(false);
+  const letter = app.charAt(0).toUpperCase();
+
+  if (!icon || error) {
+    return (
+      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+        <span className="text-sm font-semibold text-muted-foreground">{letter}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+      <img
+        src={icon}
+        alt={app}
+        width={22}
+        height={22}
+        onError={() => setError(true)}
+        className="w-[22px] h-[22px]"
+      />
     </div>
   );
 }

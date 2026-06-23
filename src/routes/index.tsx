@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/")({
 });
 
 function TeamOverview() {
+  const navigate = useNavigate();
   const [date, setDate] = useState<Date>(new Date(2026, 5, 22));
   const [range, setRange] = useState("day");
   const day = format(date, "yyyy-MM-dd");
@@ -136,14 +137,11 @@ function TeamOverview() {
                 return (
                   <tr
                     key={m.id}
-                    className="border-b last:border-0 hover:bg-muted/40 transition-colors cursor-pointer"
+                    onClick={() => navigate({ to: "/employee/$userId", params: { userId: m.id } })}
+                    className="border-b last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <td className="px-5 py-4">
-                      <Link
-                        to="/employee/$userId"
-                        params={{ userId: m.id }}
-                        className="flex items-center gap-3"
-                      >
+                      <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-slate-700 flex items-center justify-center text-xs font-semibold">
                           {m.initials}
                         </div>
@@ -151,49 +149,41 @@ function TeamOverview() {
                           <div className="font-medium text-foreground">{m.name}</div>
                           <div className="text-xs text-muted-foreground">{m.role}</div>
                         </div>
-                      </Link>
+                      </div>
                     </td>
                     <td className="px-5 py-4">
-                      <Link to="/employee/$userId" params={{ userId: m.id }} className="block">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                            <div
-                              className="h-full bg-active rounded-full transition-all"
-                              style={{ width: `${Math.min(pct, 100)}%` }}
-                            />
-                          </div>
-                          <span className="text-xs font-medium tabular-nums w-16 text-right">
-                            {formatHours(active)}
-                          </span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full bg-active rounded-full transition-all"
+                            style={{ width: `${Math.min(pct, 100)}%` }}
+                          />
                         </div>
-                      </Link>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Link to="/employee/$userId" params={{ userId: m.id }}>
-                        <span className="text-sm tabular-nums text-muted-foreground">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-idle mr-2 align-middle" />
-                          {formatHours(idle)}
+                        <span className="text-xs font-medium tabular-nums w-16 text-right">
+                          {formatHours(active)}
                         </span>
-                      </Link>
+                      </div>
                     </td>
                     <td className="px-5 py-4">
-                      <Link to="/employee/$userId" params={{ userId: m.id }}>
-                        <span className="text-sm">{topApp ?? "—"}</span>
-                      </Link>
+                      <span className="text-sm tabular-nums text-muted-foreground">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-idle mr-2 align-middle" />
+                        {formatHours(idle)}
+                      </span>
                     </td>
                     <td className="px-5 py-4">
-                      <Link to="/employee/$userId" params={{ userId: m.id }}>
-                        {isActive ? (
-                          <Badge className="bg-active/10 text-active hover:bg-active/15 border-active/20 border font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-active mr-1.5 animate-pulse" />
-                            Aktivní
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-idle/10 text-idle hover:bg-idle/15 border-idle/20 border font-medium">
-                            Nečinný
-                          </Badge>
-                        )}
-                      </Link>
+                      <span className="text-sm">{topApp ?? "—"}</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      {isActive ? (
+                        <Badge className="bg-active/10 text-active hover:bg-active/15 border-active/20 border font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-active mr-1.5 animate-pulse" />
+                          Aktivní
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-idle/10 text-idle hover:bg-idle/15 border-idle/20 border font-medium">
+                          Nečinný
+                        </Badge>
+                      )}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       <ChevronRight className="h-4 w-4" />
