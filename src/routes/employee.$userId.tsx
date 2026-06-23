@@ -224,6 +224,32 @@ function EmployeeDetail() {
   );
 }
 
+function AppIcon({ app, icon }: { app: string; icon: string | null }) {
+  const [error, setError] = useState(false);
+  const letter = app.charAt(0).toUpperCase();
+
+  if (!icon || error) {
+    return (
+      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+        <span className="text-sm font-semibold text-muted-foreground">{letter}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+      <img
+        src={icon}
+        alt={app}
+        width={22}
+        height={22}
+        onError={() => setError(true)}
+        className="w-[22px] h-[22px]"
+      />
+    </div>
+  );
+}
+
 function Stat({
   icon, label, value, accent,
 }: { icon: React.ReactNode; label: string; value: string; accent?: "active" | "idle" }) {
