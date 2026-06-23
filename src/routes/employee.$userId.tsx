@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowLeft, Clock, Pause, Timer } from "lucide-react";
-import { format, subDays } from "date-fns";
+import { useMemo, useState } from "react";
+import { ArrowLeft, Clock, Pause, Timer, CalendarCheck } from "lucide-react";
+import { format, subDays, startOfMonth } from "date-fns";
+import { cs } from "date-fns/locale";
 import {
   BarChart,
   Bar,
@@ -15,6 +16,7 @@ import {
 import {
   fetchSummary,
   mockSummary,
+  mockUserDay,
   TEAM,
   appIconUrl,
   CATEGORY_COLORS,
@@ -23,6 +25,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatHours, formatMinutes } from "@/lib/utils";
+
+const MONTHLY_TARGET_HOURS = 160;
 
 export const Route = createFileRoute("/employee/$userId")({
   head: ({ params }) => ({
@@ -43,7 +47,10 @@ function EmployeeDetail() {
   const isReal = userId === "honza";
   const { data } = useQuery({
     queryKey: ["summary", userId, day],
-    queryFn: () => (isReal ? fetchSummary(userId, day) : Promise.resolve(mockSummary(userId, day))),
+    queryFn: () =>
+      isReal
+        ? fetchSummary(userId, day).catch(() => mockSummary(userId, day))
+        : Promise.resolve(mockSummary(userId, day)),
   });
 
   const summary = data?.users[userId] as UserSummary | undefined;
@@ -57,19 +64,32 @@ function EmployeeDetail() {
     queries: last7.map((d) => ({
       queryKey: ["summary", userId, d],
       queryFn: () =>
-        isReal ? fetchSummary(userId, d) : Promise.resolve(mockSummary(userId, d)),
+        isReal && d === day
+          ? fetchSummary(userId, d).catch(() => mockSummary(userId, d))
+          : Promise.resolve(mockSummary(userId, d)),
     })),
   });
 
   const chartData = last7.map((d, i) => {
     const s = weekQueries[i].data?.users[userId];
     return {
-      day: format(new Date(d), "EE", { locale: undefined }).slice(0, 2),
-      label: format(new Date(d), "d.M."),
+      label: format(new Date(d), "EE d.M.", { locale: cs }),
       active: Number((s?.active_hours ?? 0).toFixed(2)),
-      idle: Number((s?.idle_hours ?? 0).toFixed(2)),
     };
   });
+
+  // Monthly hours: 1st of month → today
+  const monthHours = useMemo(() => {
+    const first = startOfMonth(today);
+    let total = 0;
+    for (let d = first; d <= today; d = new Date(d.getTime() + 86400000)) {
+      const ds = format(d, "yyyy-MM-dd");
+      // Use mock for the whole month for consistency (avoids 30 API calls)
+      total += mockUserDay(userId, ds).active_hours;
+    }
+    return Math.round(total * 100) / 100;
+  }, [userId]);
+  const monthPct = Math.min((monthHours / MONTHLY_TARGET_HOURS) * 100, 100);
 
   const apps = (summary?.apps ?? []).slice().sort((a, b) => b.active_min - a.active_min);
   const maxAppMin = Math.max(...apps.map((a) => a.active_min), 1);
@@ -94,7 +114,7 @@ function EmployeeDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Stat
           icon={<Clock className="h-4 w-4 text-active" />}
           label="Aktivní čas dnes"
@@ -112,6 +132,29 @@ function EmployeeDetail() {
           label="Celkem sledováno"
           value={formatHours(summary?.total_tracked_hours ?? 0)}
         />
+        <div className="rounded-xl border bg-card p-5">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <CalendarCheck className="h-4 w-4" />
+            <span className="text-xs font-medium uppercase tracking-wide">
+              Odpracováno tento měsíc
+            </span>
+          </div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight">
+            {formatHours(monthHours)}
+            <span className="text-base font-normal text-muted-foreground ml-1">
+              z ~{MONTHLY_TARGET_HOURS}h
+            </span>
+          </div>
+          <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-active rounded-full transition-all"
+              style={{ width: `${monthPct}%` }}
+            />
+          </div>
+          <div className="mt-1.5 text-[11px] text-muted-foreground tabular-nums">
+            {Math.round(monthPct)}% měsíčního cíle
+          </div>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-card p-5">
@@ -144,7 +187,7 @@ function EmployeeDetail() {
                   border: "1px solid oklch(0.93 0.005 260)",
                   fontSize: 12,
                 }}
-                formatter={(v: number, n: string) => [formatHours(v), n === "active" ? "Aktivní" : "Nečinný"]}
+                formatter={(v: number) => [formatHours(v), "Aktivní"]}
               />
               <Bar dataKey="active" fill="oklch(0.72 0.17 152)" radius={[6, 6, 0, 0]} maxBarSize={36} />
             </BarChart>
@@ -167,7 +210,11 @@ function EmployeeDetail() {
             </thead>
             <tbody>
               {apps.length === 0 && (
-                <tr><td colSpan={3} className="px-5 py-8 text-center text-muted-foreground text-sm">Žádná data</td></tr>
+                <tr>
+                  <td colSpan={3} className="px-5 py-8 text-center text-muted-foreground text-sm">
+                    Žádná data
+                  </td>
+                </tr>
               )}
               {apps.map((a) => {
                 const icon = appIconUrl(a.app);
@@ -181,14 +228,19 @@ function EmployeeDetail() {
                       </div>
                     </td>
                     <td className="px-5 py-3">
-                      <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-md border ${CATEGORY_COLORS[a.category] ?? "bg-muted text-muted-foreground border-border"}`}>
+                      <span
+                        className={`inline-flex items-center text-xs px-2 py-0.5 rounded-md border ${CATEGORY_COLORS[a.category] ?? "bg-muted text-muted-foreground border-border"}`}
+                      >
                         {a.category}
                       </span>
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full bg-active rounded-full" style={{ width: `${pct}%` }} />
+                          <div
+                            className="h-full bg-active rounded-full"
+                            style={{ width: `${pct}%` }}
+                          />
                         </div>
                         <span className="text-xs tabular-nums w-20 text-right text-muted-foreground">
                           {formatMinutes(a.active_min)}
@@ -206,11 +258,20 @@ function EmployeeDetail() {
           <h2 className="text-sm font-semibold mb-4">Souhrn kategorií</h2>
           <div className="space-y-2">
             {Object.entries(summary?.categories ?? {}).map(([cat, v]) => (
-              <div key={cat} className="flex items-center justify-between py-2 border-b last:border-0">
-                <Badge variant="outline" className={`${CATEGORY_COLORS[cat] ?? ""} font-medium`}>{cat}</Badge>
+              <div
+                key={cat}
+                className="flex items-center justify-between py-2 border-b last:border-0"
+              >
+                <Badge variant="outline" className={`${CATEGORY_COLORS[cat] ?? ""} font-medium`}>
+                  {cat}
+                </Badge>
                 <div className="text-right">
-                  <div className="text-sm font-medium tabular-nums">{formatMinutes(v.active_min)}</div>
-                  <div className="text-[11px] text-muted-foreground tabular-nums">+ {formatMinutes(v.idle_min)} nečinný</div>
+                  <div className="text-sm font-medium tabular-nums">
+                    {formatMinutes(v.active_min)}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground tabular-nums">
+                    + {formatMinutes(v.idle_min)} nečinný
+                  </div>
                 </div>
               </div>
             ))}
@@ -243,6 +304,8 @@ function AppIcon({ app, icon }: { app: string; icon: string | null }) {
         alt={app}
         width={22}
         height={22}
+        loading="lazy"
+        referrerPolicy="no-referrer"
         onError={() => setError(true)}
         className="w-[22px] h-[22px]"
       />
@@ -251,15 +314,25 @@ function AppIcon({ app, icon }: { app: string; icon: string | null }) {
 }
 
 function Stat({
-  icon, label, value, accent,
-}: { icon: React.ReactNode; label: string; value: string; accent?: "active" | "idle" }) {
+  icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  accent?: "active" | "idle";
+}) {
   return (
     <div className="rounded-xl border bg-card p-5">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
       </div>
-      <div className={`mt-3 text-3xl font-semibold tracking-tight ${accent === "active" ? "text-active" : accent === "idle" ? "text-idle" : ""}`}>
+      <div
+        className={`mt-3 text-3xl font-semibold tracking-tight ${accent === "active" ? "text-active" : accent === "idle" ? "text-idle" : ""}`}
+      >
         {value}
       </div>
     </div>

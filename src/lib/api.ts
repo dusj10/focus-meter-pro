@@ -1,3 +1,6 @@
+import { addDays, format, startOfMonth, endOfMonth, startOfWeek } from "date-fns";
+import { cs } from "date-fns/locale";
+
 export interface AppEntry {
   app: string;
   raw: string;
@@ -33,39 +36,165 @@ export const TEAM = [
   { id: "martin", name: "Martin Dvořák", role: "Backend Developer", initials: "MD" },
 ];
 
-export function mockSummary(userId: string, day: string): SummaryResponse {
-  const data: Record<string, UserSummary> = {
-    petra: {
-      active_hours: 5.2,
-      idle_hours: 1.4,
-      total_tracked_hours: 6.6,
-      apps: [
-        { app: "Figma", raw: "figma.exe", category: "Tvorba", active_min: 180, idle_min: 20 },
-        { app: "Slack", raw: "slack.exe", category: "Komunikace", active_min: 60, idle_min: 30 },
-        { app: "Google Chrome", raw: "chrome.exe", category: "Prohlížeč", active_min: 72, idle_min: 34 },
-      ],
-      categories: {
-        Tvorba: { active_min: 180, idle_min: 20 },
-        Komunikace: { active_min: 60, idle_min: 30 },
-        Prohlížeč: { active_min: 72, idle_min: 34 },
-      },
-    },
-    martin: {
-      active_hours: 6.8,
-      idle_hours: 0.6,
-      total_tracked_hours: 7.4,
-      apps: [
-        { app: "Visual Studio Code", raw: "code.exe", category: "Vývoj", active_min: 280, idle_min: 15 },
-        { app: "Příkazový řádek", raw: "cmd.exe", category: "Vývoj", active_min: 80, idle_min: 5 },
-        { app: "Microsoft Teams", raw: "ms-teams.exe", category: "Komunikace", active_min: 48, idle_min: 16 },
-      ],
-      categories: {
-        Vývoj: { active_min: 360, idle_min: 20 },
-        Komunikace: { active_min: 48, idle_min: 16 },
-      },
-    },
+type AppProfile = { app: string; raw: string; category: string; share: number };
+
+const USER_PROFILES: Record<string, { apps: AppProfile[]; baseHours: number }> = {
+  honza: {
+    baseHours: 6.2,
+    apps: [
+      { app: "Visual Studio Code", raw: "code.exe", category: "Vývoj", share: 0.5 },
+      { app: "Google Chrome", raw: "chrome.exe", category: "Prohlížeč", share: 0.22 },
+      { app: "Slack", raw: "slack.exe", category: "Komunikace", share: 0.14 },
+      { app: "Figma", raw: "figma.exe", category: "Tvorba", share: 0.08 },
+      { app: "Notion", raw: "notion.exe", category: "Tvorba", share: 0.06 },
+    ],
+  },
+  petra: {
+    baseHours: 5.8,
+    apps: [
+      { app: "Figma", raw: "figma.exe", category: "Tvorba", share: 0.52 },
+      { app: "Google Chrome", raw: "chrome.exe", category: "Prohlížeč", share: 0.18 },
+      { app: "Slack", raw: "slack.exe", category: "Komunikace", share: 0.14 },
+      { app: "Notion", raw: "notion.exe", category: "Tvorba", share: 0.1 },
+      { app: "Adobe Photoshop", raw: "photoshop.exe", category: "Tvorba", share: 0.06 },
+    ],
+  },
+  martin: {
+    baseHours: 6.6,
+    apps: [
+      { app: "Visual Studio Code", raw: "code.exe", category: "Vývoj", share: 0.46 },
+      { app: "PowerShell", raw: "pwsh.exe", category: "Vývoj", share: 0.2 },
+      { app: "Postman", raw: "postman.exe", category: "Vývoj", share: 0.12 },
+      { app: "Microsoft Teams", raw: "ms-teams.exe", category: "Komunikace", share: 0.12 },
+      { app: "Google Chrome", raw: "chrome.exe", category: "Prohlížeč", share: 0.1 },
+    ],
+  },
+};
+
+function seedRng(s: string) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967295;
   };
-  return { day, users: { [userId]: data[userId] ?? data.petra } };
+}
+
+function emptySummary(): UserSummary {
+  return { active_hours: 0, idle_hours: 0, total_tracked_hours: 0, apps: [], categories: {} };
+}
+
+export function mockUserDay(userId: string, day: string): UserSummary {
+  const profile = USER_PROFILES[userId] ?? USER_PROFILES.honza;
+  const date = new Date(day + "T00:00:00");
+  const dow = date.getDay(); // 0=Sun..6=Sat
+  const isWeekend = dow === 0 || dow === 6;
+  const rng = seedRng(`${userId}-${day}`);
+
+  let active_hours: number;
+  let idle_hours: number;
+
+  if (isWeekend) {
+    // Occasional weekend work
+    if (rng() > 0.8) {
+      active_hours = 0.5 + rng() * 1.2;
+      idle_hours = 0.1 + rng() * 0.3;
+    } else {
+      return emptySummary();
+    }
+  } else {
+    active_hours = profile.baseHours - 0.8 + rng() * 1.6; // ~5–7h
+    idle_hours = 0.4 + rng() * 1.1;
+  }
+
+  active_hours = Math.round(active_hours * 100) / 100;
+  idle_hours = Math.round(idle_hours * 100) / 100;
+
+  // Distribute apps with mild jitter
+  const jittered = profile.apps.map((p) => ({ ...p, w: p.share * (0.75 + rng() * 0.5) }));
+  const totalW = jittered.reduce((s, a) => s + a.w, 0);
+  const apps: AppEntry[] = jittered.map((a) => ({
+    app: a.app,
+    raw: a.raw,
+    category: a.category,
+    active_min: Math.round((a.w / totalW) * active_hours * 60),
+    idle_min: Math.round((a.w / totalW) * idle_hours * 60),
+  }));
+
+  const categories: UserSummary["categories"] = {};
+  apps.forEach((a) => {
+    const c = (categories[a.category] ??= { active_min: 0, idle_min: 0 });
+    c.active_min += a.active_min;
+    c.idle_min += a.idle_min;
+  });
+
+  return {
+    active_hours,
+    idle_hours,
+    total_tracked_hours: Math.round((active_hours + idle_hours) * 100) / 100,
+    apps,
+    categories,
+  };
+}
+
+export function mockSummary(userId: string, day: string): SummaryResponse {
+  return { day, users: { [userId]: mockUserDay(userId, day) } };
+}
+
+export function aggregateSummaries(list: UserSummary[]): UserSummary {
+  const out = emptySummary();
+  const appMap = new Map<string, AppEntry>();
+  list.forEach((s) => {
+    out.active_hours += s.active_hours;
+    out.idle_hours += s.idle_hours;
+    out.total_tracked_hours += s.total_tracked_hours;
+    s.apps.forEach((a) => {
+      const ex = appMap.get(a.raw);
+      if (ex) {
+        ex.active_min += a.active_min;
+        ex.idle_min += a.idle_min;
+      } else {
+        appMap.set(a.raw, { ...a });
+      }
+    });
+    Object.entries(s.categories).forEach(([k, v]) => {
+      const c = (out.categories[k] ??= { active_min: 0, idle_min: 0 });
+      c.active_min += v.active_min;
+      c.idle_min += v.idle_min;
+    });
+  });
+  out.active_hours = Math.round(out.active_hours * 100) / 100;
+  out.idle_hours = Math.round(out.idle_hours * 100) / 100;
+  out.total_tracked_hours = Math.round(out.total_tracked_hours * 100) / 100;
+  out.apps = Array.from(appMap.values());
+  return out;
+}
+
+export type RangeKind = "day" | "week" | "month";
+
+export function getRangeDays(range: RangeKind, date: Date): string[] {
+  if (range === "day") return [format(date, "yyyy-MM-dd")];
+  if (range === "week") {
+    const monday = startOfWeek(date, { weekStartsOn: 1 });
+    return Array.from({ length: 5 }, (_, i) => format(addDays(monday, i), "yyyy-MM-dd"));
+  }
+  const first = startOfMonth(date);
+  const last = endOfMonth(date);
+  const days: string[] = [];
+  for (let d = first; d <= last; d = addDays(d, 1)) days.push(format(d, "yyyy-MM-dd"));
+  return days;
+}
+
+export function getRangeLabel(range: RangeKind, date: Date): string {
+  if (range === "day") return format(date, "d. M. yyyy");
+  if (range === "week") {
+    const monday = startOfWeek(date, { weekStartsOn: 1 });
+    const friday = addDays(monday, 4);
+    return `${format(monday, "d.M.")} – ${format(friday, "d.M.")}`;
+  }
+  return format(date, "LLLL yyyy", { locale: cs });
 }
 
 const ICON_MAP: Record<string, { slug: string; color: string }> = {
