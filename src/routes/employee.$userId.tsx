@@ -176,15 +176,7 @@ function EmployeeDetail() {
                   <tr key={a.raw} className="border-b last:border-0">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                          {icon ? (
-                            <img src={icon} alt={a.app} className="w-4 h-4" />
-                          ) : (
-                            <span className="text-[10px] font-semibold text-muted-foreground">
-                              {a.app.slice(0, 2).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
+                        <AppIcon app={a.app} icon={icon} />
                         <span className="font-medium">{a.app}</span>
                       </div>
                     </td>
