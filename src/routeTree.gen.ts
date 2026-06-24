@@ -9,68 +9,72 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as EmployeeUserIdRouteImport } from './routes/employee.$userId'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEmployeeUserIdRouteImport } from './routes/_authenticated/employee.$userId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/_authenticated/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmployeeUserIdRoute = EmployeeUserIdRouteImport.update({
-  id: '/employee/$userId',
-  path: '/employee/$userId',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedEmployeeUserIdRoute =
+  AuthenticatedEmployeeUserIdRouteImport.update({
+    id: '/_authenticated/employee/$userId',
+    path: '/employee/$userId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/employee/$userId': typeof EmployeeUserIdRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/employee/$userId': typeof AuthenticatedEmployeeUserIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/employee/$userId': typeof EmployeeUserIdRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/employee/$userId': typeof AuthenticatedEmployeeUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/employee/$userId': typeof EmployeeUserIdRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/employee/$userId': typeof AuthenticatedEmployeeUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/employee/$userId'
+  fullPaths: '/dashboard' | '/employee/$userId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/employee/$userId'
-  id: '__root__' | '/' | '/employee/$userId'
+  to: '/dashboard' | '/employee/$userId'
+  id:
+    | '__root__'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/employee/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  EmployeeUserIdRoute: typeof EmployeeUserIdRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEmployeeUserIdRoute: typeof AuthenticatedEmployeeUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/employee/$userId': {
-      id: '/employee/$userId'
+    '/_authenticated/employee/$userId': {
+      id: '/_authenticated/employee/$userId'
       path: '/employee/$userId'
       fullPath: '/employee/$userId'
-      preLoaderRoute: typeof EmployeeUserIdRouteImport
+      preLoaderRoute: typeof AuthenticatedEmployeeUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  EmployeeUserIdRoute: EmployeeUserIdRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEmployeeUserIdRoute: AuthenticatedEmployeeUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

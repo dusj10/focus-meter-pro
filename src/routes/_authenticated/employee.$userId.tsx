@@ -28,7 +28,7 @@ import { formatHours, formatMinutes } from "@/lib/utils";
 
 const MONTHLY_TARGET_HOURS = 160;
 
-export const Route = createFileRoute("/employee/$userId")({
+export const Route = createFileRoute("/_authenticated/employee/$userId")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.userId} — HomeOffice Checker` },

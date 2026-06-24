@@ -21,7 +21,7 @@ import {
   type UserSummary,
 } from "@/lib/api";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Přehled týmu — HomeOffice Checker" },
