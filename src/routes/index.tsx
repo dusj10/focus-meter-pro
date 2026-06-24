@@ -1,257 +1,193 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQueries } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { format } from "date-fns";
-import { cs } from "date-fns/locale";
-import { Calendar as CalendarIcon, Users, Activity, TrendingUp, ChevronRight } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Activity, Users, BarChart3, ShieldCheck, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { cn, formatHours } from "@/lib/utils";
-import {
-  fetchSummary,
-  mockSummary,
-  TEAM,
-  aggregateSummaries,
-  getRangeDays,
-  getRangeLabel,
-  type RangeKind,
-  type UserSummary,
-} from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Přehled týmu — HomeOffice Checker" },
-      { name: "description", content: "Aktivita vašeho týmu na jednom místě." },
+      { title: "HomeOffice Checker — Přehled práce vašeho týmu na dálku" },
+      {
+        name: "description",
+        content:
+          "Sledujte aktivní čas vzdálených zaměstnanců bez narušení soukromí. Žádné screenshoty, žádné keyloggery.",
+      },
+      { property: "og:title", content: "HomeOffice Checker" },
+      {
+        property: "og:description",
+        content: "Přehled práce vašeho týmu na dálku.",
+      },
     ],
   }),
-  component: TeamOverview,
+  component: Landing,
 });
 
-const RANGE_LABELS: Record<RangeKind, { unit: string; suffix: string }> = {
-  day: { unit: "dnes", suffix: "dnes" },
-  week: { unit: "tento týden", suffix: "tento týden" },
-  month: { unit: "tento měsíc", suffix: "tento měsíc" },
-};
-
-function TeamOverview() {
-  const navigate = useNavigate();
-  const [date, setDate] = useState<Date>(new Date(2026, 5, 22));
-  const [range, setRange] = useState<RangeKind>("day");
-
-  const days = useMemo(() => getRangeDays(range, date), [range, date]);
-
-  // Flat list of {userId, day} queries for all team members across the range
-  const tasks = useMemo(
-    () => TEAM.flatMap((m) => days.map((d) => ({ id: m.id, day: d }))),
-    [days],
-  );
-
-  const results = useQueries({
-    queries: tasks.map((t) => ({
-      queryKey: ["summary", t.id, t.day],
-      queryFn: () =>
-        t.id === "honza" && range === "day"
-          ? fetchSummary(t.id, t.day).catch(() => mockSummary(t.id, t.day))
-          : Promise.resolve(mockSummary(t.id, t.day)),
-      staleTime: 60_000,
-    })),
-  });
-
-  const members = TEAM.map((m) => {
-    const summaries: UserSummary[] = [];
-    tasks.forEach((t, i) => {
-      if (t.id !== m.id) return;
-      const s = results[i].data?.users[m.id];
-      if (s) summaries.push(s);
-    });
-    return { ...m, summary: aggregateSummaries(summaries) };
-  });
-
-  const activeCount = members.filter((m) => m.summary.active_hours > 0.05).length;
-  const avgActive =
-    members.reduce((s, m) => s + m.summary.active_hours, 0) / Math.max(members.length, 1);
-  const top = [...members].sort((a, b) => b.summary.active_hours - a.summary.active_hours)[0];
-
-  const labels = RANGE_LABELS[range];
-  const rangeLabel = getRangeLabel(range, date);
-  const subtitle =
-    range === "day"
-      ? format(date, "EEEE d. MMMM yyyy", { locale: cs })
-      : range === "week"
-        ? `Týden ${rangeLabel}`
-        : rangeLabel.charAt(0).toUpperCase() + rangeLabel.slice(1);
-
+function Landing() {
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Přehled týmu</h1>
-          <p className="text-sm text-muted-foreground mt-1">Acme s.r.o. · {subtitle}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Tabs value={range} onValueChange={(v) => setRange(v as RangeKind)}>
-            <TabsList>
-              <TabsTrigger value="day">Den</TabsTrigger>
-              <TabsTrigger value="week">Týden</TabsTrigger>
-              <TabsTrigger value="month">Měsíc</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="justify-start text-left font-normal gap-2">
-                <CalendarIcon className="h-4 w-4" />
-                {rangeLabel}
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="border-b sticky top-0 z-10 bg-background/80 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
+              H
+            </div>
+            <span className="font-semibold">HomeOffice Checker</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/login">
+              <Button variant="ghost" size="sm">Přihlásit se</Button>
+            </Link>
+            <Link to="/register">
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                Začít zdarma
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(d) => d && setDate(d)}
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
+            </Link>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard
-          icon={<Users className="h-4 w-4" />}
-          label={`Aktivní členové ${labels.unit}`}
-          value={`${activeCount} / ${TEAM.length}`}
-          hint="zaměstnanců sledováno"
-        />
-        <StatCard
-          icon={<Activity className="h-4 w-4" />}
-          label="Průměrný aktivní čas"
-          value={formatHours(avgActive)}
-          hint={`napříč týmem ${labels.suffix}`}
-        />
-        <StatCard
-          icon={<TrendingUp className="h-4 w-4" />}
-          label="Nejproduktivnější"
-          value={top?.name.split(" ")[0] ?? "—"}
-          hint={`${formatHours(top?.summary.active_hours ?? 0)} aktivní`}
-        />
-      </div>
+      {/* Hero */}
+      <section className="px-6 pt-20 pb-24 max-w-4xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-xs text-muted-foreground mb-6">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+          Soukromí na prvním místě
+        </div>
+        <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1]">
+          Přehled práce vašeho týmu
+          <br />
+          <span className="text-muted-foreground">na dálku</span>
+        </h1>
+        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          HomeOffice Checker sleduje aktivní čas zaměstnanců bez narušení
+          soukromí. Žádné screenshoty, žádné keyloggery.
+        </p>
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <Link to="/register">
+            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+              Začít zdarma
+            </Button>
+          </Link>
+          <Link to="/login">
+            <Button size="lg" variant="outline">
+              Přihlásit se
+            </Button>
+          </Link>
+        </div>
+      </section>
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="px-5 py-4 border-b flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Členové týmu</h2>
-          <span className="text-xs text-muted-foreground">{members.length} osob</span>
+      {/* Features */}
+      <section className="px-6 py-20 border-t bg-muted/20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-semibold tracking-tight text-center">
+            Vše, co manažer potřebuje
+          </h2>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FeatureCard
+              icon={<Activity className="h-5 w-5 text-emerald-600" />}
+              title="Aktivní čas v reálném čase"
+              desc="Vidíte, kdo právě pracuje a na čem, bez nutnosti se ptát."
+            />
+            <FeatureCard
+              icon={<Users className="h-5 w-5 text-emerald-600" />}
+              title="Přehled celého týmu"
+              desc="Jeden dashboard pro všechny zaměstnance — denně, týdně i měsíčně."
+            />
+            <FeatureCard
+              icon={<BarChart3 className="h-5 w-5 text-emerald-600" />}
+              title="Týdenní a měsíční reporty"
+              desc="Automatické přehledy aktivity, kategorií aplikací a produktivity."
+            />
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b bg-muted/30">
-                <th className="px-5 py-3 font-medium">Jméno</th>
-                <th className="px-5 py-3 font-medium w-[28%]">Aktivní čas</th>
-                <th className="px-5 py-3 font-medium">Čas nečinnosti</th>
-                <th className="px-5 py-3 font-medium">Top aplikace</th>
-                <th className="px-5 py-3 font-medium">Stav</th>
-                <th className="px-5 py-3 w-8"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((m) => {
-                const active = m.summary.active_hours;
-                const idle = m.summary.idle_hours;
-                // Scale progress bar to range max: 8h day, 40h week, 160h month
-                const max = range === "day" ? 8 : range === "week" ? 40 : 160;
-                const pct = (active / max) * 100;
-                const topApp = m.summary.apps
-                  .slice()
-                  .sort((a, b) => b.active_min - a.active_min)[0]?.app;
-                const isActive = active > 0.05;
-                return (
-                  <tr
-                    key={m.id}
-                    onClick={() => navigate({ to: "/employee/$userId", params: { userId: m.id } })}
-                    className="border-b last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-slate-700 flex items-center justify-center text-xs font-semibold">
-                          {m.initials}
-                        </div>
-                        <div>
-                          <div className="font-medium text-foreground">{m.name}</div>
-                          <div className="text-xs text-muted-foreground">{m.role}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                          <div
-                            className="h-full bg-active rounded-full transition-all"
-                            style={{ width: `${Math.min(pct, 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium tabular-nums w-20 text-right">
-                          {formatHours(active)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-sm tabular-nums text-muted-foreground">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-idle mr-2 align-middle" />
-                        {formatHours(idle)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-sm">{topApp ?? "—"}</span>
-                    </td>
-                    <td className="px-5 py-4">
-                      {isActive ? (
-                        <Badge className="bg-active/10 text-active hover:bg-active/15 border-active/20 border font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-active mr-1.5 animate-pulse" />
-                          Aktivní
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-idle/10 text-idle hover:bg-idle/15 border-idle/20 border font-medium">
-                          Nečinný
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">
-                      <ChevronRight className="h-4 w-4" />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      </section>
+
+      {/* How it works */}
+      <section className="px-6 py-20 border-t">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-semibold tracking-tight text-center">
+            Jak to funguje
+          </h2>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { n: 1, t: "Manažer pozve zaměstnance", d: "Pošlete pozvánku e-mailem během minuty." },
+              { n: 2, t: "Zaměstnanec si nainstaluje agenta", d: "Lehký program běží na pozadí jeho počítače." },
+              { n: 3, t: "Manažer vidí výkony v dashboardu", d: "Data se aktualizují v reálném čase." },
+            ].map((s) => (
+              <div key={s.n} className="text-center">
+                <div className="mx-auto w-10 h-10 rounded-full bg-emerald-600 text-white font-semibold flex items-center justify-center">
+                  {s.n}
+                </div>
+                <h3 className="mt-4 font-semibold">{s.t}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="px-6 py-20 border-t bg-muted/20">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-3xl font-semibold tracking-tight text-center">
+            Jednoduché ceny
+          </h2>
+          <div className="mt-10 rounded-2xl border bg-card p-8 shadow-sm">
+            <div className="text-sm font-medium text-emerald-600">Team</div>
+            <div className="mt-3 flex items-baseline gap-1">
+              <span className="text-5xl font-semibold tracking-tight">€15</span>
+              <span className="text-muted-foreground">/měsíc</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              až 20 zaměstnanců, všechny funkce
+            </p>
+            <ul className="mt-6 space-y-2 text-sm">
+              {[
+                "Sledování aktivního času",
+                "Přehled celého týmu",
+                "Týdenní a měsíční reporty",
+                "Bez screenshotů a keyloggerů",
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-emerald-600" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link to="/register" className="block mt-8">
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg">
+                Vyzkoušet 14 dní zdarma
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t mt-auto">
+        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground text-center">
+          HomeOffice Checker © 2026
+        </div>
+      </footer>
     </div>
   );
 }
 
-function StatCard({
+function FeatureCard({
   icon,
-  label,
-  value,
-  hint,
+  title,
+  desc,
 }: {
   icon: React.ReactNode;
-  label: string;
-  value: string;
-  hint: string;
+  title: string;
+  desc: string;
 }) {
   return (
-    <div className="rounded-xl border bg-card p-5">
-      <div className="flex items-center gap-2 text-muted-foreground">
+    <div className="rounded-xl border bg-card p-6">
+      <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
         {icon}
-        <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
       </div>
-      <div className="mt-3 text-3xl font-semibold tracking-tight">{value}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
+      <h3 className="mt-4 font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{desc}</p>
     </div>
   );
 }

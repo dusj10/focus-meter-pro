@@ -28,7 +28,7 @@ import { formatHours, formatMinutes } from "@/lib/utils";
 
 const MONTHLY_TARGET_HOURS = 160;
 
-export const Route = createFileRoute("/employee/$userId")({
+export const Route = createFileRoute("/_authenticated/employee/$userId")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.userId} — HomeOffice Checker` },
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/employee/$userId")({
 });
 
 function EmployeeDetail() {
-  const { userId } = useParams({ from: "/employee/$userId" });
+  const { userId } = useParams({ from: "/_authenticated/employee/$userId" });
   const member = TEAM.find((m) => m.id === userId) ?? TEAM[0];
   const today = new Date(2026, 5, 22);
   const day = format(today, "yyyy-MM-dd");
@@ -97,7 +97,7 @@ function EmployeeDetail() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
-        <Link to="/">
+        <Link to="/dashboard">
           <ArrowLeft className="h-4 w-4" /> Zpět na přehled týmu
         </Link>
       </Button>
