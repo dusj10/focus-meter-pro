@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/employee/$userId")({
 });
 
 function EmployeeDetail() {
-  const { userId } = useParams({ from: "/employee/$userId" });
+  const { userId } = useParams({ from: "/_authenticated/employee/$userId" });
   const member = TEAM.find((m) => m.id === userId) ?? TEAM[0];
   const today = new Date(2026, 5, 22);
   const day = format(today, "yyyy-MM-dd");
