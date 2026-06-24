@@ -171,7 +171,7 @@ function TeamOverview() {
                 return (
                   <tr
                     key={m.id}
-                    onClick={() => navigate({ to: "/employee/$userId", params: { userId: m.id } })}
+                    onClick={() => navigate({ to: "/employee/$userId", params: { userId: m.id } } as any)}
                     className="border-b last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <td className="px-5 py-4">
