@@ -97,7 +97,7 @@ function EmployeeDetail() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
-        <Link to="/">
+        <Link to="/dashboard">
           <ArrowLeft className="h-4 w-4" /> Zpět na přehled týmu
         </Link>
       </Button>
