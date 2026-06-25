@@ -17,7 +17,7 @@ import {
 const items = [
   { title: "Přehled týmu", url: "/dashboard", icon: LayoutDashboard },
   { title: "Statistiky", url: "/statistics", icon: BarChart3 },
-  { title: "Nastavení", url: "/dashboard", icon: Settings },
+  { title: "Nastavení", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
