@@ -399,5 +399,3 @@ function AppIcon({ app }: { app: string }) {
   );
 }
 
-// React import for useState in AppIcon
-import * as React from "react";
