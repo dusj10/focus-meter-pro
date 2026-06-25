@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Settings, BarChart3, LogOut } from "lucide-react";
+import { LayoutDashboard, Settings, BarChart3, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
@@ -16,8 +16,7 @@ import {
 
 const items = [
   { title: "Přehled týmu", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Zaměstnanci", url: "/dashboard", icon: Users },
-  { title: "Statistiky", url: "/dashboard", icon: BarChart3 },
+  { title: "Statistiky", url: "/statistics", icon: BarChart3 },
   { title: "Nastavení", url: "/dashboard", icon: Settings },
 ];
 
