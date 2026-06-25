@@ -51,7 +51,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={idx}>
                   <SidebarMenuButton
                     asChild
-                    isActive={idx === 0 && currentPath.startsWith("/dashboard")}
+                    isActive={currentPath === item.url || (item.url !== "/dashboard" && currentPath.startsWith(item.url))}
                   >
                     <Link to={item.url}>
                       <item.icon className="h-4 w-4" />
