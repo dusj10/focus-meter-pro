@@ -1,10 +1,14 @@
 import { addDays, format, startOfMonth, endOfMonth, startOfWeek } from "date-fns";
 import { cs } from "date-fns/locale";
 
-export interface AppIconEntry {
-  slug: string;
-  color: string;
+export interface AppEntry {
+  app: string;
+  raw: string;
+  category: string;
+  active_min: number;
+  idle_min: number;
 }
+
 
 
 export interface UserSummary {
