@@ -20,6 +20,7 @@ import {
   getRangeDays,
   getRangeLabel,
   appIconUrl,
+  fallbackIconUrl,
   type RangeKind,
   type UserSummary,
 } from "@/lib/api";
