@@ -378,8 +378,9 @@ function SummaryCard({
 }
 
 function AppIcon({ app }: { app: string }) {
-  const url = appIconUrl(app);
   const [err, setErr] = useState(false);
+  const url = appIconUrl(app);
+  const fallback = fallbackIconUrl(app);
   if (!url || err) {
     return (
       <div className="w-8 h-8 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-semibold shrink-0">
@@ -394,7 +395,13 @@ function AppIcon({ app }: { app: string }) {
       width={32}
       height={32}
       referrerPolicy="no-referrer"
-      onError={() => setErr(true)}
+      onError={(e) => {
+        if (fallback && e.currentTarget.src !== fallback) {
+          e.currentTarget.src = fallback;
+        } else {
+          setErr(true);
+        }
+      }}
       className="w-8 h-8 rounded-md shrink-0"
     />
   );
