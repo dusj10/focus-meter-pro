@@ -19,6 +19,7 @@ import {
   mockUserDay,
   TEAM,
   appIconUrl,
+  fallbackIconUrl,
   CATEGORY_COLORS,
   type UserSummary,
 } from "@/lib/api";
