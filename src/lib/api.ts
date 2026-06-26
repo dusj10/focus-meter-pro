@@ -9,6 +9,8 @@ export interface AppEntry {
   idle_min: number;
 }
 
+
+
 export interface UserSummary {
   active_hours: number;
   idle_hours: number;
@@ -233,8 +235,15 @@ const ICON_MAP: Record<string, { slug: string; color: string }> = {
 export function appIconUrl(app: string): string | null {
   const entry = ICON_MAP[app];
   if (!entry) return null;
-  return `https://cdn.simpleicons.org/${entry.slug}/${entry.color}`;
+  return `https://cdn.simpleicons.org/${entry.slug}`;
 }
+
+export function fallbackIconUrl(app: string): string | null {
+  const entry = ICON_MAP[app];
+  if (!entry) return null;
+  return `https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${entry.slug}.svg`;
+}
+
 
 export const CATEGORY_COLORS: Record<string, string> = {
   Tvorba: "bg-violet-100 text-violet-700 border-violet-200",

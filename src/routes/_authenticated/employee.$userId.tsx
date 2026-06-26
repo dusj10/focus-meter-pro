@@ -19,6 +19,7 @@ import {
   mockUserDay,
   TEAM,
   appIconUrl,
+  fallbackIconUrl,
   CATEGORY_COLORS,
   type UserSummary,
 } from "@/lib/api";
@@ -288,6 +289,7 @@ function EmployeeDetail() {
 function AppIcon({ app, icon }: { app: string; icon: string | null }) {
   const [error, setError] = useState(false);
   const letter = app.charAt(0).toUpperCase();
+  const fallback = fallbackIconUrl(app);
 
   if (!icon || error) {
     return (
@@ -306,7 +308,13 @@ function AppIcon({ app, icon }: { app: string; icon: string | null }) {
         height={22}
         loading="lazy"
         referrerPolicy="no-referrer"
-        onError={() => setError(true)}
+        onError={(e) => {
+          if (fallback && e.currentTarget.src !== fallback) {
+            e.currentTarget.src = fallback;
+          } else {
+            setError(true);
+          }
+        }}
         className="w-[22px] h-[22px]"
       />
     </div>
