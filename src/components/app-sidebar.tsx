@@ -34,11 +34,10 @@ export function AppSidebar() {
       <SidebarHeader className="px-4 py-5 border-b">
         <Link to="/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
-            H
+            T
           </div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-sm">HomeOffice</span>
-            <span className="text-xs text-muted-foreground">Checker</span>
+            <span className="font-semibold text-sm">Teamlense</span>
           </div>
         </Link>
       </SidebarHeader>

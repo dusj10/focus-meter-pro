@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "HomeOffice Checker — Přehled práce vašeho týmu na dálku" },
+      { title: "Teamlense — Přehled práce vašeho týmu na dálku" },
       {
         name: "description",
         content:
           "Sledujte aktivní čas vzdálených zaměstnanců bez narušení soukromí. Žádné screenshoty, žádné keyloggery.",
       },
-      { property: "og:title", content: "HomeOffice Checker" },
+      { property: "og:title", content: "Teamlense" },
       {
         property: "og:description",
         content: "Přehled práce vašeho týmu na dálku.",
@@ -29,9 +29,9 @@ function Landing() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
-              H
+              T
             </div>
-            <span className="font-semibold">HomeOffice Checker</span>
+            <span className="font-semibold">Teamlense</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/login">
@@ -58,7 +58,7 @@ function Landing() {
           <span className="text-muted-foreground">na dálku</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          HomeOffice Checker sleduje aktivní čas zaměstnanců bez narušení
+          Teamlense sleduje aktivní čas zaměstnanců bez narušení
           soukromí. Žádné screenshoty, žádné keyloggery.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
@@ -165,7 +165,7 @@ function Landing() {
       {/* Footer */}
       <footer className="border-t mt-auto">
         <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground text-center">
-          HomeOffice Checker © 2026
+          Teamlense © 2026
         </div>
       </footer>
     </div>
