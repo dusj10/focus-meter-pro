@@ -58,8 +58,8 @@ function Landing() {
           <span className="text-muted-foreground">na dálku</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Teamlense sleduje aktivní čas zaměstnanců bez narušení
-          soukromí. Žádné screenshoty, žádné keyloggery.
+          Teamlense automaticky vytváří přehled produktivity vašeho týmu.
+          Víte, kdo pracuje, na čem a jak dlouho — bez jediného screenshotu.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Link to="/register">
