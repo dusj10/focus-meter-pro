@@ -125,6 +125,10 @@ function Landing() {
         </div>
       </section>
 
+      {/* Showcase */}
+      <ShowcaseSection />
+
+
       {/* Pricing */}
       <section className="px-6 py-20 border-t bg-muted/20">
         <div className="max-w-md mx-auto">
