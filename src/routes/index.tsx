@@ -58,8 +58,8 @@ function Landing() {
           <span className="text-muted-foreground">na dálku</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Teamlense sleduje aktivní čas zaměstnanců bez narušení
-          soukromí. Žádné screenshoty, žádné keyloggery.
+          Teamlense automaticky vytváří přehled produktivity vašeho týmu.
+          Víte, kdo pracuje, na čem a jak dlouho — bez jediného screenshotu.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Link to="/register">
@@ -125,6 +125,10 @@ function Landing() {
         </div>
       </section>
 
+      {/* Showcase */}
+      <ShowcaseSection />
+
+
       {/* Pricing */}
       <section className="px-6 py-20 border-t bg-muted/20">
         <div className="max-w-md mx-auto">
@@ -189,5 +193,190 @@ function FeatureCard({
       <h3 className="mt-4 font-semibold">{title}</h3>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{desc}</p>
     </div>
+  );
+}
+
+function BrowserFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-xl border bg-card shadow-2xl overflow-hidden ${className}`}>
+      <div className="h-7 bg-muted/60 border-b flex items-center gap-1.5 px-3">
+        <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+        <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+      </div>
+      <div className="bg-background">{children}</div>
+    </div>
+  );
+}
+
+function MockTeamOverview() {
+  const rows = [
+    { i: "HN", n: "Honza Novák", r: "Frontend Developer", w: 8, t: "7 min", idle: "2h 30min", app: "Microsoft Teams" },
+    { i: "PS", n: "Petra Svobodová", r: "Product Designer", w: 65, t: "5h 31min", idle: "1h 7min", app: "Figma" },
+    { i: "MD", n: "Martin Dvořák", r: "Backend Developer", w: 82, t: "7h 2min", idle: "1h 29min", app: "Visual Studio Code" },
+  ];
+  return (
+    <div className="p-5 text-[11px]">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-base font-semibold tracking-tight">Přehled týmu</div>
+          <div className="text-[10px] text-muted-foreground mt-0.5">Acme s.r.o. · pondělí 22. června 2026</div>
+        </div>
+        <div className="flex gap-1">
+          <div className="px-2 py-0.5 rounded-md border bg-background text-[10px]">Den</div>
+          <div className="px-2 py-0.5 text-[10px] text-muted-foreground">Týden</div>
+          <div className="px-2 py-0.5 text-[10px] text-muted-foreground">Měsíc</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {[
+          { l: "AKTIVNÍ ČLENOVÉ", v: "3 / 3" },
+          { l: "PRŮMĚRNÝ ČAS", v: "4h 13min" },
+          { l: "NEJPRODUKTIVNĚJŠÍ", v: "Martin" },
+        ].map((c) => (
+          <div key={c.l} className="rounded-lg border p-2.5">
+            <div className="text-[8px] uppercase text-muted-foreground tracking-wide">{c.l}</div>
+            <div className="text-sm font-semibold mt-1">{c.v}</div>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-lg border">
+        {rows.map((row, idx) => (
+          <div key={row.i} className={`flex items-center gap-2 px-2.5 py-2 ${idx > 0 ? "border-t" : ""}`}>
+            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium">{row.i}</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-medium truncate">{row.n}</div>
+              <div className="text-[9px] text-muted-foreground truncate">{row.r}</div>
+            </div>
+            <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="h-full bg-emerald-500" style={{ width: `${row.w}%` }} />
+            </div>
+            <div className="w-12 text-right text-[10px] tabular-nums">{row.t}</div>
+            <div className="hidden sm:block w-24 text-[10px] text-muted-foreground truncate">{row.app}</div>
+            <div className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] border border-emerald-200">● Aktivní</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MockEmployee() {
+  const bars = [6.3, 6.1, 6.2, 6.0, 0, 0, 0.1];
+  const days = ["út", "st", "čt", "pá", "so", "ne", "po"];
+  return (
+    <div className="p-4 text-[10px]">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium">HN</div>
+        <div>
+          <div className="text-xs font-semibold">Honza Novák</div>
+          <div className="text-[9px] text-muted-foreground">Frontend Developer · 22. 6. 2026</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5 mb-3">
+        <div className="rounded-md border p-2"><div className="text-[8px] uppercase text-muted-foreground">Aktivní dnes</div><div className="text-emerald-600 font-semibold text-sm">7 min</div></div>
+        <div className="rounded-md border p-2"><div className="text-[8px] uppercase text-muted-foreground">Nečinnost</div><div className="text-amber-600 font-semibold text-sm">2h 30min</div></div>
+        <div className="rounded-md border p-2"><div className="text-[8px] uppercase text-muted-foreground">Celkem</div><div className="font-semibold text-sm">2h 38min</div></div>
+        <div className="rounded-md border p-2">
+          <div className="text-[8px] uppercase text-muted-foreground">Tento měsíc</div>
+          <div className="font-semibold text-sm">95h 58min</div>
+          <div className="mt-1 h-1 bg-muted rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[60%]" /></div>
+        </div>
+      </div>
+      <div className="rounded-md border p-2">
+        <div className="text-[9px] font-medium mb-2">Aktivní hodiny za posledních 7 dní</div>
+        <div className="flex items-end gap-1 h-20">
+          {bars.map((h, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full bg-emerald-500 rounded-sm" style={{ height: `${Math.max(2, (h / 8) * 100)}%` }} />
+              <div className="text-[7px] text-muted-foreground">{days[i]}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MockStatistics() {
+  const emp = [{ n: "Martin", w: 92 }, { n: "Honza", w: 84 }, { n: "Petra", w: 72 }];
+  return (
+    <div className="p-4 text-[10px]">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="text-xs font-semibold">Statistiky týmu</div>
+          <div className="text-[9px] text-muted-foreground">22.6. – 26.6.</div>
+        </div>
+        <div className="flex gap-1">
+          <div className="px-1.5 py-0.5 rounded border bg-background text-[9px]">Týden</div>
+          <div className="px-1.5 py-0.5 text-[9px] text-muted-foreground">Měsíc</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5 mb-3">
+        <div className="rounded-md border p-1.5"><div className="text-[7px] uppercase text-muted-foreground">Celkem</div><div className="font-semibold text-xs">92h 4min</div></div>
+        <div className="rounded-md border p-1.5"><div className="text-[7px] uppercase text-muted-foreground">Průměr</div><div className="font-semibold text-xs">30h 41min</div></div>
+        <div className="rounded-md border p-1.5"><div className="text-[7px] uppercase text-muted-foreground">Změna</div><div className="font-semibold text-xs text-red-500">-0.1%</div></div>
+      </div>
+      <div className="rounded-md border p-2">
+        <div className="text-[9px] font-medium mb-2">Srovnání zaměstnanců</div>
+        <div className="space-y-2">
+          {emp.map((e) => (
+            <div key={e.n} className="flex items-center gap-2">
+              <div className="w-10 text-[9px]">{e.n}</div>
+              <div className="flex-1 h-3 bg-muted/40 rounded">
+                <div className="h-full bg-emerald-500 rounded" style={{ width: `${e.w}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShowcaseSection() {
+  return (
+    <section className="px-6 py-24 border-t">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-semibold tracking-tight text-center">Podívejte se dovnitř</h2>
+        <p className="mt-3 text-muted-foreground text-center max-w-xl mx-auto">
+          Čistý dashboard, který vám okamžitě ukáže, jak váš tým pracuje.
+        </p>
+
+        <div className="relative mt-16 h-[420px] md:h-[480px]">
+          {/* Left smaller frame */}
+          <div className="hidden md:block absolute left-0 top-12 w-[320px] -rotate-6 z-10 opacity-95">
+            <BrowserFrame>
+              <MockEmployee />
+            </BrowserFrame>
+          </div>
+          {/* Right smaller frame */}
+          <div className="hidden md:block absolute right-0 top-12 w-[320px] rotate-6 z-10 opacity-95">
+            <BrowserFrame>
+              <MockStatistics />
+            </BrowserFrame>
+          </div>
+          {/* Center large frame */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full max-w-2xl z-20">
+            <BrowserFrame>
+              <MockTeamOverview />
+            </BrowserFrame>
+          </div>
+        </div>
+
+        <ul className="mt-12 flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
+          {[
+            "Žádné screenshoty ani keyloggery",
+            "Automatický start po přihlášení do Windows",
+            "Data v reálném čase",
+          ].map((b) => (
+            <li key={b} className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-emerald-600" />
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }
