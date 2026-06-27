@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
-    meta: [{ title: "Přihlášení — HomeOffice Checker" }],
+    meta: [{ title: "Přihlášení — Teamlense" }],
   }),
   component: LoginPage,
 });
@@ -37,9 +37,9 @@ function LoginPage() {
       <div className="w-full max-w-sm">
         <Link to="/" className="flex items-center gap-2 justify-center mb-8">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
-            H
+            T
           </div>
-          <span className="font-semibold">HomeOffice Checker</span>
+          <span className="font-semibold">Teamlense</span>
         </Link>
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <h1 className="text-xl font-semibold tracking-tight">Přihlásit se</h1>

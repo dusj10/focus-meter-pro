@@ -24,7 +24,7 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Přehled týmu — HomeOffice Checker" },
+      { title: "Přehled týmu — Teamlense" },
       { name: "description", content: "Aktivita vašeho týmu na jednom místě." },
     ],
   }),
