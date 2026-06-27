@@ -31,7 +31,7 @@ import { addDays, subDays, subWeeks, subMonths } from "date-fns";
 import { ArrowDownRight, ArrowUpRight, Users, Clock, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/statistics")({
-  head: () => ({ meta: [{ title: "Statistiky týmu — HomeOffice Checker" }] }),
+  head: () => ({ meta: [{ title: "Statistiky týmu — Teamlense" }] }),
   component: StatisticsPage,
 });
 
