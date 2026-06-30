@@ -27,7 +27,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMinutes } from "@/lib/utils";
-import { addDays, subDays, subWeeks, subMonths } from "date-fns";
+import { subWeeks, subMonths } from "date-fns";
 import { Users, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/statistics")({
