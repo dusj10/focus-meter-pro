@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Activity, Users, BarChart3, ShieldCheck, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TeamlenseLogo } from "@/components/team-lense-logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,11 +28,8 @@ function Landing() {
       {/* Header */}
       <header className="border-b sticky top-0 z-10 bg-background/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
-              T
-            </div>
-            <span className="font-semibold">Teamlense</span>
+          <Link to="/" className="flex items-center">
+            <TeamlenseLogo />
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/login">

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TeamlenseLogo } from "@/components/team-lense-logo";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -47,11 +48,8 @@ function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4 py-12">
       <div className="w-full max-w-sm">
-        <Link to="/" className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
-            T
-          </div>
-          <span className="font-semibold">Teamlense</span>
+        <Link to="/" className="flex items-center justify-center mb-8">
+          <TeamlenseLogo />
         </Link>
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <h1 className="text-xl font-semibold tracking-tight">Vytvořit účet</h1>

@@ -1,6 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { LayoutDashboard, Settings, BarChart3, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { TeamlenseLogo } from "@/components/team-lense-logo";
 import {
   Sidebar,
   SidebarContent,
@@ -32,13 +33,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-4 py-5 border-b">
-        <Link to="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
-            T
-          </div>
-          <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-sm">Teamlense</span>
-          </div>
+        <Link to="/dashboard" className="flex items-center">
+          <TeamlenseLogo textClassName="group-data-[collapsible=icon]:hidden" />
         </Link>
       </SidebarHeader>
       <SidebarContent>
