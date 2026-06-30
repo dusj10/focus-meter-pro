@@ -201,7 +201,8 @@ function TeamOverview() {
                 const topApp = m.summary.apps
                   .slice()
                   .sort((a, b) => b.active_min - a.active_min)[0]?.app;
-                const isActive = active > 0.05;
+                const productivity = PRODUCTIVITY_MOCK[m.id] ?? 0;
+                const prodColor = productivityColor(productivity);
                 return (
                   <tr
                     key={m.id}
