@@ -116,12 +116,6 @@ function StatisticsPage() {
           <h1 className="text-2xl font-semibold">Statistiky týmu</h1>
           <p className="text-sm text-muted-foreground mt-1">{getRangeLabel(range, refDate)}</p>
         </div>
-        <Tabs value={range} onValueChange={(v) => setRange(v as RangeKind)}>
-          <TabsList>
-            <TabsTrigger value="week">Týden</TabsTrigger>
-            <TabsTrigger value="month">Měsíc</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
       {/* Summary cards */}
@@ -290,27 +284,6 @@ function StatisticsPage() {
         </CardContent>
       </Card>
 
-      {/* Week vs week */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            {range === "week" ? "Týden vs. týden" : "Měsíc vs. měsíc"} – srovnání
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={wvw}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(v) => `${v}h`} />
-              <Tooltip formatter={(v: number) => `${v} h`} />
-              <Legend />
-              <Bar dataKey="Minulé období" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Toto období" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 }
