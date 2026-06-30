@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { TeamlenseLogo } from "@/components/team-lense-logo";
-import { Check, ImageIcon } from "lucide-react";
+import { Check } from "lucide-react";
+import screenDashboard from "@/assets/screen-dashboard.png.asset.json";
+import screenEmployee from "@/assets/screen-employee.png.asset.json";
+import screenApps from "@/assets/screen-apps.png.asset.json";
+import screenStatistics from "@/assets/screen-statistics.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,7 +54,7 @@ function Landing() {
         {/* Hero */}
         <section className="px-6 pt-20 pb-24 max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-            Víte, co váš tým právě dělá?
+            Přehled práce Vašeho týmu
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Teamlense sleduje aktivitu vašeho týmu v reálném čase. Vidíte kdo pracuje, na čem a jak dlouho.
@@ -100,10 +104,10 @@ function Landing() {
               Screenshots
             </h2>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ScreenshotPlaceholder label="Dashboard přehledu týmu" />
-              <ScreenshotPlaceholder label="Detail zaměstnance s časovou osou" />
-              <ScreenshotPlaceholder label="Rozdělení podle aplikací" />
-              <ScreenshotPlaceholder label="Statistiky týmu" />
+              <ScreenshotImage src={screenDashboard.url} label="Dashboard přehledu týmu" />
+              <ScreenshotImage src={screenEmployee.url} label="Detail zaměstnance s časovou osou" />
+              <ScreenshotImage src={screenApps.url} label="Rozdělení podle aplikací" />
+              <ScreenshotImage src={screenStatistics.url} label="Statistiky týmu" />
             </div>
           </div>
         </section>
@@ -167,11 +171,10 @@ function StepCard({ title, desc }: { title: string; desc: string }) {
   );
 }
 
-function ScreenshotPlaceholder({ label }: { label: string }) {
+function ScreenshotImage({ src, label }: { src: string; label: string }) {
   return (
-    <div className="rounded-xl border bg-muted/50 shadow-sm flex flex-col items-center justify-center aspect-video p-6 text-center">
-      <ImageIcon className="h-10 w-10 text-muted-foreground/60 mb-4" />
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <img src={src} alt={label} loading="lazy" className="w-full h-auto block" />
     </div>
   );
 }
