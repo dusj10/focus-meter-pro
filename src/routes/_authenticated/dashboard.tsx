@@ -53,6 +53,18 @@ const RANGE_LABELS: Record<RangeKind, { unit: string; suffix: string }> = {
   month: { unit: "tento měsíc", suffix: "tento měsíc" },
 };
 
+const PRODUCTIVITY_MOCK: Record<string, number> = {
+  honza: 73,
+  petra: 61,
+  martin: 83,
+};
+
+function productivityColor(value: number): string {
+  if (value > 70) return "#1D9E75";
+  if (value >= 50) return "#F59E0B";
+  return "#EF4444";
+}
+
 function TeamOverview() {
   const navigate = useNavigate();
   const [date, setDate] = useState<Date>(new Date(2026, 5, 22));
