@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { TeamlenseLogo } from "@/components/team-lense-logo";
-import { ImageIcon } from "lucide-react";
+import { Check, ImageIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -107,7 +107,53 @@ function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Pricing */}
+        <section className="px-6 py-20 border-t bg-muted/20">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold tracking-tight">Jednoduché ceny</h2>
+            <p className="mt-3 text-muted-foreground">Plaťte jen za aktivní členy týmu.</p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <PricingCard
+                title="Měsíčně"
+                price="99 Kč"
+                period="za člena měsíčně"
+                features={[
+                  "Neomezený počet zaměstnanců",
+                  "Přehled v reálném čase",
+                  "Časová osa dne",
+                  "Statistiky a grafy",
+                  "Emailová podpora",
+                ]}
+                buttonText="Začít zdarma"
+              />
+              <PricingCard
+                title="Ročně"
+                price="79 Kč"
+                period="za člena měsíčně"
+                periodNote="při platbě ročně"
+                features={[
+                  "Neomezený počet zaměstnanců",
+                  "Přehled v reálném čase",
+                  "Časová osa dne",
+                  "Statistiky a grafy",
+                  "Emailová podpora",
+                ]}
+                buttonText="Začít zdarma"
+                popular
+              />
+            </div>
+            <p className="mt-8 text-sm text-muted-foreground">Prvních 14 dní zdarma. Bez závazků.</p>
+          </div>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t">
+        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground text-center">
+          Teamlense © 2026
+        </div>
+      </footer>
     </div>
   );
 }
@@ -126,6 +172,57 @@ function ScreenshotPlaceholder({ label }: { label: string }) {
     <div className="rounded-xl border bg-muted/50 shadow-sm flex flex-col items-center justify-center aspect-video p-6 text-center">
       <ImageIcon className="h-10 w-10 text-muted-foreground/60 mb-4" />
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function PricingCard({
+  title,
+  price,
+  period,
+  periodNote,
+  features,
+  buttonText,
+  popular,
+}: {
+  title: string;
+  price: string;
+  period: string;
+  periodNote?: string;
+  features: string[];
+  buttonText: string;
+  popular?: boolean;
+}) {
+  return (
+    <div className="relative rounded-2xl border bg-card p-8 shadow-sm text-left">
+      {popular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="inline-block rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
+            Nejoblíbenější
+          </span>
+        </div>
+      )}
+      <div className="text-sm font-medium text-muted-foreground">{title}</div>
+      <div className="mt-4 flex items-baseline gap-1">
+        <span className="text-4xl font-bold tracking-tight">{price}</span>
+        <span className="text-muted-foreground">{period}</span>
+      </div>
+      {periodNote && (
+        <p className="mt-1 text-xs text-muted-foreground">{periodNote}</p>
+      )}
+      <ul className="mt-6 space-y-3">
+        {features.map((f) => (
+          <li key={f} className="flex items-start gap-2 text-sm">
+            <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+            {f}
+          </li>
+        ))}
+      </ul>
+      <Link to="/register" className="block mt-8">
+        <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg">
+          {buttonText}
+        </Button>
+      </Link>
     </div>
   );
 }
