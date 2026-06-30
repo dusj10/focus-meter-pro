@@ -3,7 +3,24 @@ import { useQueries } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
-import { Calendar as CalendarIcon, Users, Activity, TrendingUp, ChevronRight } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Users,
+  Activity,
+  TrendingUp,
+  ChevronRight,
+  ArrowUp,
+  Clock,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -119,7 +136,7 @@ function TeamOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={<Users className="h-4 w-4" />}
           label={`Aktivní členové ${labels.unit}`}
@@ -138,6 +155,12 @@ function TeamOverview() {
           value={top?.name.split(" ")[0] ?? "—"}
           hint={`${formatHours(top?.summary.active_hours ?? 0)} aktivní`}
         />
+        <ProductivityCard />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <WeeklyTrend className="lg:col-span-2" />
+        <TeamStatus />
       </div>
 
       <div className="rounded-xl border bg-card overflow-hidden">
