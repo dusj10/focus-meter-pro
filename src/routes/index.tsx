@@ -197,7 +197,7 @@ function PricingCard({
   popular?: boolean;
 }) {
   return (
-    <div className="relative rounded-2xl border bg-card p-8 shadow-sm text-left">
+    <div className="relative flex flex-col flex-1 justify-between rounded-2xl border bg-card p-8 shadow-sm text-left">
       {popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="inline-block rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white">
@@ -206,14 +206,16 @@ function PricingCard({
         </div>
       )}
       <div className="text-sm font-medium text-muted-foreground">{title}</div>
-      <div className="mt-4 flex items-baseline gap-1">
-        <span className="text-4xl font-bold tracking-tight">{price}</span>
-        <span className="text-muted-foreground">{period}</span>
+      <div className="mt-4 min-h-[120px]">
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold tracking-tight">{price}</span>
+          <span className="text-muted-foreground">{period}</span>
+        </div>
+        {periodNote && (
+          <p className="mt-1 text-xs text-muted-foreground">{periodNote}</p>
+        )}
       </div>
-      {periodNote && (
-        <p className="mt-1 text-xs text-muted-foreground">{periodNote}</p>
-      )}
-      <ul className="mt-6 space-y-3">
+      <ul className="mt-6 flex-1 space-y-3">
         {features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm">
             <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
