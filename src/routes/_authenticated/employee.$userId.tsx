@@ -15,7 +15,6 @@ import {
 } from "recharts";
 import {
   fetchSummary,
-  fetchTimeline,
   mockSummary,
   mockUserDay,
   TEAM,
@@ -23,11 +22,12 @@ import {
   fallbackIconUrl,
   CATEGORY_COLORS,
   type UserSummary,
-  type TimelineMinute,
 } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatHours, formatMinutes } from "@/lib/utils";
+
+const MONTHLY_TARGET_HOURS = 160;
 
 export const Route = createFileRoute("/_authenticated/employee/$userId")({
   head: ({ params }) => ({
@@ -42,32 +42,19 @@ export const Route = createFileRoute("/_authenticated/employee/$userId")({
 function EmployeeDetail() {
   const { userId } = useParams({ from: "/_authenticated/employee/$userId" });
   const member = TEAM.find((m) => m.id === userId) ?? TEAM[0];
-  const today = new Date();
+  const today = new Date(2026, 5, 22);
   const day = format(today, "yyyy-MM-dd");
 
-  const { data: summaryData } = useQuery({
+  const isReal = userId === "honza";
+  const { data } = useQuery({
     queryKey: ["summary", userId, day],
-    queryFn: async () => {
-      try {
-        const result = await fetchSummary(userId, day);
-        if (result.users[userId]) return result;
-      } catch {}
-      return mockSummary(userId, day);
-    },
+    queryFn: () =>
+      isReal
+        ? fetchSummary(userId, day).catch(() => mockSummary(userId, day))
+        : Promise.resolve(mockSummary(userId, day)),
   });
 
-  const { data: timelineData } = useQuery({
-    queryKey: ["timeline", userId, day],
-    queryFn: async () => {
-      try {
-        const result = await fetchTimeline(userId, day);
-        if (result.timeline.length > 0) return result;
-      } catch {}
-      return null;
-    },
-  });
-
-  const summary = summaryData?.users[userId] as UserSummary | undefined;
+  const summary = data?.users[userId] as UserSummary | undefined;
 
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = subDays(today, 6 - i);
@@ -77,13 +64,10 @@ function EmployeeDetail() {
   const weekQueries = useQueries({
     queries: last7.map((d) => ({
       queryKey: ["summary", userId, d],
-      queryFn: async () => {
-        try {
-          const result = await fetchSummary(userId, d);
-          if (result.users[userId]) return result;
-        } catch {}
-        return mockSummary(userId, d);
-      },
+      queryFn: () =>
+        isReal && d === day
+          ? fetchSummary(userId, d).catch(() => mockSummary(userId, d))
+          : Promise.resolve(mockSummary(userId, d)),
     })),
   });
 
@@ -95,15 +79,18 @@ function EmployeeDetail() {
     };
   });
 
+  // Monthly hours: 1st of month → today
   const monthHours = useMemo(() => {
     const first = startOfMonth(today);
     let total = 0;
     for (let d = first; d <= today; d = new Date(d.getTime() + 86400000)) {
       const ds = format(d, "yyyy-MM-dd");
+      // Use mock for the whole month for consistency (avoids 30 API calls)
       total += mockUserDay(userId, ds).active_hours;
     }
     return Math.round(total * 100) / 100;
   }, [userId]);
+  const monthPct = Math.min((monthHours / MONTHLY_TARGET_HOURS) * 100, 100);
 
   const apps = (summary?.apps ?? []).slice().sort((a, b) => b.active_min - a.active_min);
   const maxAppMin = Math.max(...apps.map((a) => a.active_min), 1);
@@ -155,15 +142,24 @@ function EmployeeDetail() {
           </div>
           <div className="mt-3 text-3xl font-semibold tracking-tight">
             {formatHours(monthHours)}
+            <span className="text-base font-normal text-muted-foreground ml-1">
+              z ~{MONTHLY_TARGET_HOURS}h
+            </span>
+          </div>
+          <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-active rounded-full transition-all"
+              style={{ width: `${monthPct}%` }}
+            />
+          </div>
+          <div className="mt-1.5 text-[11px] text-muted-foreground tabular-nums">
+            {Math.round(monthPct)}% měsíčního cíle
           </div>
         </div>
       </div>
 
-      <AttendanceAndTimeline
-        loginTime={timelineData?.login_time}
-        logoutTime={timelineData?.logout_time}
-        timeline={timelineData?.timeline}
-      />
+      <AttendanceAndTimeline />
+
 
       <div className="rounded-xl border bg-card p-5">
         <div className="flex items-center justify-between mb-4">
@@ -354,11 +350,36 @@ function Stat({
   );
 }
 
+const ARRIVAL = "09:15";
+const DEPARTURE = "17:42";
+const DAY_START_MIN = 9 * 60; // 09:00
+const DAY_END_MIN = 17 * 60; // 17:00 → 8h window
+const TOTAL_MIN = DAY_END_MIN - DAY_START_MIN; // 480
+
+// Active blocks as [startMin, endMin, appName] in absolute minutes
+const ACTIVE_BLOCKS: Array<[number, number, string]> = [
+  [9 * 60 + 15, 10 * 60 + 45, "Visual Studio Code"],
+  [11 * 60, 12 * 60 + 30, "Slack"],
+  [13 * 60 + 15, 15 * 60, "Visual Studio Code"],
+  [15 * 60 + 20, 17 * 60 + 30, "Figma"],
+];
+const PRESENCE: [number, number] = [9 * 60 + 15, 17 * 60 + 30];
+
 type MinState = { state: "active" | "idle" | "offline"; app?: string };
 
-function parseTimeMin(t: string): number {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
+function buildMinutes(): MinState[] {
+  const arr: MinState[] = [];
+  for (let i = 0; i < TOTAL_MIN; i++) {
+    const abs = DAY_START_MIN + i;
+    if (abs < PRESENCE[0] || abs >= PRESENCE[1]) {
+      arr.push({ state: "offline" });
+      continue;
+    }
+    const block = ACTIVE_BLOCKS.find(([s, e]) => abs >= s && abs < e);
+    if (block) arr.push({ state: "active", app: block[2] });
+    else arr.push({ state: "idle" });
+  }
+  return arr;
 }
 
 function minToLabel(abs: number) {
@@ -367,91 +388,10 @@ function minToLabel(abs: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-const MOCK_ARRIVAL = "09:15";
-const MOCK_DEPARTURE = "17:42";
-const MOCK_DAY_START = 9 * 60;
-const MOCK_DAY_END = 17 * 60;
-const MOCK_TOTAL = MOCK_DAY_END - MOCK_DAY_START;
-const MOCK_BLOCKS: Array<[number, number, string]> = [
-  [9 * 60 + 15, 10 * 60 + 45, "Visual Studio Code"],
-  [11 * 60, 12 * 60 + 30, "Slack"],
-  [13 * 60 + 15, 15 * 60, "Visual Studio Code"],
-  [15 * 60 + 20, 17 * 60 + 30, "Figma"],
-];
-const MOCK_PRESENCE: [number, number] = [9 * 60 + 15, 17 * 60 + 30];
+function AttendanceAndTimeline() {
+  const minutes = useMemo(buildMinutes, []);
 
-function buildMockMinutes(): MinState[] {
-  const arr: MinState[] = [];
-  for (let i = 0; i < MOCK_TOTAL; i++) {
-    const abs = MOCK_DAY_START + i;
-    if (abs < MOCK_PRESENCE[0] || abs >= MOCK_PRESENCE[1]) {
-      arr.push({ state: "offline" });
-      continue;
-    }
-    const block = MOCK_BLOCKS.find(([s, e]) => abs >= s && abs < e);
-    if (block) arr.push({ state: "active", app: block[2] });
-    else arr.push({ state: "idle" });
-  }
-  return arr;
-}
-
-function AttendanceAndTimeline({
-  loginTime,
-  logoutTime,
-  timeline,
-}: {
-  loginTime?: string | null;
-  logoutTime?: string | null;
-  timeline?: TimelineMinute[];
-}) {
-  const { minutes, dayStartMin, totalMin, arrival, departure, windowLabel, ticks } = useMemo(() => {
-    if (timeline && timeline.length > 0 && loginTime && logoutTime) {
-      const loginMin = parseTimeMin(loginTime);
-      const logoutMin = parseTimeMin(logoutTime);
-      const startH = Math.floor(loginMin / 60);
-      const endH = Math.ceil((logoutMin + 1) / 60);
-      const dayStartMin = startH * 60;
-      const dayEndMin = endH * 60;
-      const totalMin = dayEndMin - dayStartMin;
-
-      const minuteMap = new Map(timeline.map((e) => [parseTimeMin(e.time), e]));
-
-      const minutes: MinState[] = [];
-      for (let i = 0; i < totalMin; i++) {
-        const abs = dayStartMin + i;
-        const entry = minuteMap.get(abs);
-        if (entry) {
-          minutes.push({ state: entry.status, app: entry.app });
-        } else {
-          minutes.push({ state: "offline" });
-        }
-      }
-
-      const ticks: number[] = [];
-      for (let h = startH; h <= endH; h += 2) ticks.push(h);
-
-      return {
-        minutes,
-        dayStartMin,
-        totalMin,
-        arrival: loginTime,
-        departure: logoutTime,
-        windowLabel: `${minToLabel(dayStartMin)} – ${minToLabel(dayEndMin)}`,
-        ticks,
-      };
-    }
-
-    return {
-      minutes: buildMockMinutes(),
-      dayStartMin: MOCK_DAY_START,
-      totalMin: MOCK_TOTAL,
-      arrival: MOCK_ARRIVAL,
-      departure: MOCK_DEPARTURE,
-      windowLabel: "09:00 – 17:00",
-      ticks: [9, 11, 13, 15, 17],
-    };
-  }, [timeline, loginTime, logoutTime]);
-
+  // Compress into contiguous segments
   const segments = useMemo(() => {
     const segs: Array<{ start: number; length: number; state: MinState["state"]; app?: string }> = [];
     let i = 0;
@@ -469,21 +409,20 @@ function AttendanceAndTimeline({
     return segs;
   }, [minutes]);
 
-  const [hover, setHover] = useState<{
-    x: number;
-    label: string;
-    app?: string;
-    state: MinState["state"];
-  } | null>(null);
+  const [hover, setHover] = useState<{ x: number; label: string; app?: string; state: MinState["state"] } | null>(
+    null,
+  );
 
   function handleMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const ratio = Math.max(0, Math.min(1, x / rect.width));
-    const minIdx = Math.min(totalMin - 1, Math.floor(ratio * totalMin));
+    const minIdx = Math.min(TOTAL_MIN - 1, Math.floor(ratio * TOTAL_MIN));
     const m = minutes[minIdx];
-    setHover({ x, label: minToLabel(dayStartMin + minIdx), app: m.app, state: m.state });
+    setHover({ x, label: minToLabel(DAY_START_MIN + minIdx), app: m.app, state: m.state });
   }
+
+  const ticks = [9, 11, 13, 15, 17];
 
   const stateLabel: Record<MinState["state"], string> = {
     active: "Aktivní",
@@ -499,14 +438,14 @@ function AttendanceAndTimeline({
             <Clock className="h-4 w-4 text-active" />
             <span className="text-xs font-medium uppercase tracking-wide">Příchod</span>
           </div>
-          <div className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{arrival}</div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{ARRIVAL}</div>
         </div>
         <div className="rounded-xl border bg-card p-5">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="h-4 w-4 text-idle" />
             <span className="text-xs font-medium uppercase tracking-wide">Odchod</span>
           </div>
-          <div className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{departure}</div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{DEPARTURE}</div>
         </div>
       </div>
 
@@ -514,7 +453,7 @@ function AttendanceAndTimeline({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold">Časová osa dne</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Pracovní den {windowLabel}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Pracovní den 09:00 – 17:00</p>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1.5">
@@ -539,7 +478,7 @@ function AttendanceAndTimeline({
             {segments.map((seg, idx) => (
               <div
                 key={idx}
-                style={{ width: `${(seg.length / totalMin) * 100}%` }}
+                style={{ width: `${(seg.length / TOTAL_MIN) * 100}%` }}
                 className={
                   seg.state === "active"
                     ? "bg-active h-full"
@@ -572,7 +511,7 @@ function AttendanceAndTimeline({
 
           <div className="relative mt-2 h-4">
             {ticks.map((h) => {
-              const pct = ((h * 60 - dayStartMin) / totalMin) * 100;
+              const pct = ((h * 60 - DAY_START_MIN) / TOTAL_MIN) * 100;
               return (
                 <div
                   key={h}
@@ -589,3 +528,4 @@ function AttendanceAndTimeline({
     </>
   );
 }
+

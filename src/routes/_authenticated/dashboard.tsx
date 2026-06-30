@@ -67,7 +67,7 @@ function productivityColor(value: number): string {
 
 function TeamOverview() {
   const navigate = useNavigate();
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(new Date(2026, 5, 22));
   const [range, setRange] = useState<RangeKind>("day");
 
   const days = useMemo(() => getRangeDays(range, date), [range, date]);
@@ -81,13 +81,10 @@ function TeamOverview() {
   const results = useQueries({
     queries: tasks.map((t) => ({
       queryKey: ["summary", t.id, t.day],
-      queryFn: async () => {
-        try {
-          const result = await fetchSummary(t.id, t.day);
-          if (result.users[t.id]) return result;
-        } catch {}
-        return mockSummary(t.id, t.day);
-      },
+      queryFn: () =>
+        t.id === "honza" && range === "day"
+          ? fetchSummary(t.id, t.day).catch(() => mockSummary(t.id, t.day))
+          : Promise.resolve(mockSummary(t.id, t.day)),
       staleTime: 60_000,
     })),
   });

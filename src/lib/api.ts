@@ -32,29 +32,6 @@ export async function fetchSummary(userId: string, day: string): Promise<Summary
   return res.json();
 }
 
-export interface TimelineMinute {
-  time: string;
-  status: "active" | "idle";
-  active_sec: number;
-  idle_sec: number;
-  app: string;
-  app_raw: string;
-}
-
-export interface TimelineResponse {
-  user_id: string;
-  day: string;
-  login_time: string | null;
-  logout_time: string | null;
-  timeline: TimelineMinute[];
-}
-
-export async function fetchTimeline(userId: string, day: string): Promise<TimelineResponse> {
-  const res = await fetch(`${BASE}/api/timeline?user_id=${userId}&day=${day}`);
-  if (!res.ok) throw new Error("Failed to fetch timeline");
-  return res.json();
-}
-
 export const TEAM = [
   { id: "honza", name: "Honza Novák", role: "Frontend Developer", initials: "HN" },
   { id: "petra", name: "Petra Svobodová", role: "Product Designer", initials: "PS" },
