@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { format } from "date-fns";
 import {
   BarChart,
   Bar,
@@ -21,10 +22,13 @@ import {
   appIconUrl,
   fallbackIconUrl,
   type UserSummary,
+  type RangeKind,
 } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMinutes } from "@/lib/utils";
 import { Users, Clock } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/statistics")({
   head: () => ({ meta: [{ title: "Statistiky týmu — Teamlense" }] }),
