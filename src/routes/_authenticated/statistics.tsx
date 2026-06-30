@@ -10,7 +10,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   CartesianGrid,
 } from "recharts";
 import {
@@ -21,13 +20,10 @@ import {
   getRangeLabel,
   appIconUrl,
   fallbackIconUrl,
-  type RangeKind,
   type UserSummary,
 } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMinutes } from "@/lib/utils";
-import { subWeeks, subMonths } from "date-fns";
 import { Users, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/statistics")({
