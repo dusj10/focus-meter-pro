@@ -97,11 +97,11 @@ function Landing() {
           </div>
         </section>
 
-        {/* Screenshots */}
+        {/* ukázka rozhraní */}
         <section className="px-6 py-20 border-t">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold tracking-tight text-center">
-              Screenshots
+              Ukázka rozhraní
             </h2>
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
               <ScreenshotImage src={screenDashboard.url} label="Dashboard přehledu týmu" />
