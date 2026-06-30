@@ -158,6 +158,9 @@ function EmployeeDetail() {
         </div>
       </div>
 
+      <AttendanceAndTimeline />
+
+
       <div className="rounded-xl border bg-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -346,3 +349,183 @@ function Stat({
     </div>
   );
 }
+
+const ARRIVAL = "09:15";
+const DEPARTURE = "17:42";
+const DAY_START_MIN = 9 * 60; // 09:00
+const DAY_END_MIN = 17 * 60; // 17:00 → 8h window
+const TOTAL_MIN = DAY_END_MIN - DAY_START_MIN; // 480
+
+// Active blocks as [startMin, endMin, appName] in absolute minutes
+const ACTIVE_BLOCKS: Array<[number, number, string]> = [
+  [9 * 60 + 15, 10 * 60 + 45, "Visual Studio Code"],
+  [11 * 60, 12 * 60 + 30, "Slack"],
+  [13 * 60 + 15, 15 * 60, "Visual Studio Code"],
+  [15 * 60 + 20, 17 * 60 + 30, "Figma"],
+];
+const PRESENCE: [number, number] = [9 * 60 + 15, 17 * 60 + 30];
+
+type MinState = { state: "active" | "idle" | "offline"; app?: string };
+
+function buildMinutes(): MinState[] {
+  const arr: MinState[] = [];
+  for (let i = 0; i < TOTAL_MIN; i++) {
+    const abs = DAY_START_MIN + i;
+    if (abs < PRESENCE[0] || abs >= PRESENCE[1]) {
+      arr.push({ state: "offline" });
+      continue;
+    }
+    const block = ACTIVE_BLOCKS.find(([s, e]) => abs >= s && abs < e);
+    if (block) arr.push({ state: "active", app: block[2] });
+    else arr.push({ state: "idle" });
+  }
+  return arr;
+}
+
+function minToLabel(abs: number) {
+  const h = Math.floor(abs / 60);
+  const m = abs % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function AttendanceAndTimeline() {
+  const minutes = useMemo(buildMinutes, []);
+
+  // Compress into contiguous segments
+  const segments = useMemo(() => {
+    const segs: Array<{ start: number; length: number; state: MinState["state"]; app?: string }> = [];
+    let i = 0;
+    while (i < minutes.length) {
+      let j = i + 1;
+      while (
+        j < minutes.length &&
+        minutes[j].state === minutes[i].state &&
+        minutes[j].app === minutes[i].app
+      )
+        j++;
+      segs.push({ start: i, length: j - i, state: minutes[i].state, app: minutes[i].app });
+      i = j;
+    }
+    return segs;
+  }, [minutes]);
+
+  const [hover, setHover] = useState<{ x: number; label: string; app?: string; state: MinState["state"] } | null>(
+    null,
+  );
+
+  function handleMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, x / rect.width));
+    const minIdx = Math.min(TOTAL_MIN - 1, Math.floor(ratio * TOTAL_MIN));
+    const m = minutes[minIdx];
+    setHover({ x, label: minToLabel(DAY_START_MIN + minIdx), app: m.app, state: m.state });
+  }
+
+  const ticks = [9, 11, 13, 15, 17];
+
+  const stateLabel: Record<MinState["state"], string> = {
+    active: "Aktivní",
+    idle: "Nečinný",
+    offline: "Offline",
+  };
+
+  return (
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="rounded-xl border bg-card p-5">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-4 w-4 text-active" />
+            <span className="text-xs font-medium uppercase tracking-wide">Příchod</span>
+          </div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{ARRIVAL}</div>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-4 w-4 text-idle" />
+            <span className="text-xs font-medium uppercase tracking-wide">Odchod</span>
+          </div>
+          <div className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{DEPARTURE}</div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-semibold">Časová osa dne</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Pracovní den 09:00 – 17:00</p>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-sm bg-active inline-block" /> Aktivní
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-sm bg-slate-300 inline-block" /> Nečinný
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-sm border border-border bg-white inline-block" />
+              Offline
+            </span>
+          </div>
+        </div>
+
+        <div className="relative">
+          <div
+            className="relative flex h-10 w-full overflow-hidden rounded-md border border-border bg-white"
+            onMouseMove={handleMove}
+            onMouseLeave={() => setHover(null)}
+          >
+            {segments.map((seg, idx) => (
+              <div
+                key={idx}
+                style={{ width: `${(seg.length / TOTAL_MIN) * 100}%` }}
+                className={
+                  seg.state === "active"
+                    ? "bg-active h-full"
+                    : seg.state === "idle"
+                      ? "bg-slate-300 h-full"
+                      : "bg-transparent h-full"
+                }
+              />
+            ))}
+            {hover && (
+              <div
+                className="pointer-events-none absolute top-0 bottom-0 w-px bg-foreground/40"
+                style={{ left: hover.x }}
+              />
+            )}
+          </div>
+
+          {hover && (
+            <div
+              className="pointer-events-none absolute -top-2 -translate-x-1/2 -translate-y-full rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md whitespace-nowrap"
+              style={{ left: hover.x }}
+            >
+              <div className="font-medium tabular-nums">{hover.label}</div>
+              <div className="text-muted-foreground">
+                {stateLabel[hover.state]}
+                {hover.app ? ` · ${hover.app}` : ""}
+              </div>
+            </div>
+          )}
+
+          <div className="relative mt-2 h-4">
+            {ticks.map((h) => {
+              const pct = ((h * 60 - DAY_START_MIN) / TOTAL_MIN) * 100;
+              return (
+                <div
+                  key={h}
+                  className="absolute -translate-x-1/2 text-[11px] text-muted-foreground tabular-nums"
+                  style={{ left: `${pct}%` }}
+                >
+                  {String(h).padStart(2, "0")}:00
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
