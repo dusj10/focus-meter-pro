@@ -3,7 +3,24 @@ import { useQueries } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
-import { Calendar as CalendarIcon, Users, Activity, TrendingUp, ChevronRight } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Users,
+  Activity,
+  TrendingUp,
+  ChevronRight,
+  ArrowUp,
+  Clock,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
