@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { TeamlenseLogo } from "@/components/team-lense-logo";
+import { CookieBanner } from "@/components/cookie-banner";
 import type { ReactNode } from "react";
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
@@ -39,10 +40,20 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="border-t">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground text-center">
-          Teamlense © 2026
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <div>Teamlense © 2026</div>
+          <nav className="flex items-center gap-6">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">
+              Zásady ochrany osobních údajů
+            </Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">
+              Podmínky použití
+            </Link>
+          </nav>
         </div>
       </footer>
+
+      <CookieBanner />
     </div>
   );
 }
