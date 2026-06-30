@@ -10,7 +10,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   CartesianGrid,
 } from "recharts";
 import {
@@ -21,13 +20,10 @@ import {
   getRangeLabel,
   appIconUrl,
   fallbackIconUrl,
-  type RangeKind,
   type UserSummary,
 } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMinutes } from "@/lib/utils";
-import { subWeeks, subMonths } from "date-fns";
 import { Users, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/statistics")({
@@ -52,17 +48,12 @@ function aggregateTeam(days: string[]): Record<string, UserSummary> {
 }
 
 function StatisticsPage() {
-  const [range, setRange] = useState<RangeKind>("week");
   const [refDate] = useState(new Date("2026-06-22"));
+  const range = "week" as const;
 
-  const currentDays = useMemo(() => getRangeDays(range, refDate), [range, refDate]);
-  const previousDays = useMemo(() => {
-    const prev = range === "week" ? subWeeks(refDate, 1) : subMonths(refDate, 1);
-    return getRangeDays(range, prev);
-  }, [range, refDate]);
+  const currentDays = useMemo(() => getRangeDays(range, refDate), [refDate]);
 
   const current = useMemo(() => aggregateTeam(currentDays), [currentDays]);
-  const previous = useMemo(() => aggregateTeam(previousDays), [previousDays]);
 
   const totalActive = Object.values(current).reduce((s, u) => s + u.active_hours, 0);
   const avgPerEmployee = totalActive / TEAM.length;
@@ -118,13 +109,6 @@ function StatisticsPage() {
   });
   const maxHeat = Math.max(...heatmap.flat().map((c) => c.value), 0.01);
 
-  // Week vs week per employee
-  const wvw = TEAM.map((m) => ({
-    name: m.name.split(" ")[0],
-    "Toto období": Math.round(current[m.id].active_hours * 10) / 10,
-    "Minulé období": Math.round(previous[m.id].active_hours * 10) / 10,
-  }));
-
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -132,12 +116,6 @@ function StatisticsPage() {
           <h1 className="text-2xl font-semibold">Statistiky týmu</h1>
           <p className="text-sm text-muted-foreground mt-1">{getRangeLabel(range, refDate)}</p>
         </div>
-        <Tabs value={range} onValueChange={(v) => setRange(v as RangeKind)}>
-          <TabsList>
-            <TabsTrigger value="week">Týden</TabsTrigger>
-            <TabsTrigger value="month">Měsíc</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
       {/* Summary cards */}
@@ -306,27 +284,6 @@ function StatisticsPage() {
         </CardContent>
       </Card>
 
-      {/* Week vs week */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            {range === "week" ? "Týden vs. týden" : "Měsíc vs. měsíc"} – srovnání
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={wvw}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(v) => `${v}h`} />
-              <Tooltip formatter={(v: number) => `${v} h`} />
-              <Legend />
-              <Bar dataKey="Minulé období" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Toto období" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 }
