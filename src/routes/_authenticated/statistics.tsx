@@ -94,22 +94,36 @@ function StatisticsPage() {
   const topApps = Array.from(appMap.values()).sort((a, b) => b.min - a.min).slice(0, 5);
   const maxAppMin = topApps[0]?.min ?? 1;
 
-  // Heatmap: days × hours 8-18
+  // Heatmap: week = days Po-Pá; month = 4 weekly aggregates
   const dayLabels = useMemo(() => {
     if (range === "week") return ["Po", "Út", "St", "Čt", "Pá"];
-    return currentDays.map((d) => format(new Date(d + "T00:00:00"), "d."));
+    return ["Týden 1", "Týden 2", "Týden 3", "Týden 4"];
+  }, [range]);
+
+  const weekGroups = useMemo(() => {
+    if (range === "week") return currentDays.map((d) => [d]);
+    const groups: string[][] = [[], [], [], []];
+    currentDays.forEach((d, i) => {
+      const weekIndex = Math.min(Math.floor(i / 7), 3);
+      groups[weekIndex].push(d);
+    });
+    return groups;
   }, [range, currentDays]);
+
   const hours = Array.from({ length: 11 }, (_, i) => 8 + i);
   const heatmap = dayLabels.map((dl, di) => {
+    const daysInGroup = weekGroups[di];
+    const avgDayActive =
+      daysInGroup.length > 0
+        ? TEAM.reduce((s, m) => {
+            return s + daysInGroup.reduce((ds, d) => ds + mockUserDay(m.id, d).active_hours, 0);
+          }, 0) / daysInGroup.length
+        : 0;
     return hours.map((h) => {
-      const dayActive = TEAM.reduce((s, m) => {
-        const day = currentDays[di] ?? currentDays[0];
-        return s + mockUserDay(m.id, day).active_hours;
-      }, 0);
       // peak around 10-11 and 14-15
       const peakFactor =
         Math.exp(-Math.pow(h - 10.5, 2) / 6) * 0.6 + Math.exp(-Math.pow(h - 14.5, 2) / 6) * 0.6;
-      const intensity = (dayActive / 3) * peakFactor;
+      const intensity = (avgDayActive / 3) * peakFactor;
       return { day: dl, hour: h, value: intensity };
     });
   });
