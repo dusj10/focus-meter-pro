@@ -280,7 +280,9 @@ function StatisticsPage() {
               </div>
               {heatmap.map((row, ri) => (
                 <div key={ri} className="flex items-center gap-1 mb-1">
-                  <div className="w-7 text-xs text-muted-foreground">{dayLabels[ri]}</div>
+                  <div className={cn("text-xs text-muted-foreground", range === "week" ? "w-7" : "w-16")}>
+                    {dayLabels[ri]}
+                  </div>
                   {row.map((cell, ci) => {
                     const ratio = cell.value / maxHeat;
                     const bg =
