@@ -175,7 +175,7 @@ function TeamOverview() {
                 <th className="px-5 py-3 font-medium w-[28%]">Aktivní čas</th>
                 <th className="px-5 py-3 font-medium">Čas nečinnosti</th>
                 <th className="px-5 py-3 font-medium">Top aplikace</th>
-                <th className="px-5 py-3 font-medium">Stav</th>
+                <th className="px-5 py-3 font-medium">Produktivita %</th>
                 <th className="px-5 py-3 w-8"></th>
               </tr>
             </thead>
