@@ -117,7 +117,7 @@ function Landing() {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold tracking-tight">Jednoduché ceny</h2>
             <p className="mt-3 text-muted-foreground">Plaťte jen za aktivní členy týmu.</p>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-12 flex flex-col md:flex-row items-stretch gap-6">
               <PricingCard
                 title="Měsíčně"
                 price="99 Kč"
