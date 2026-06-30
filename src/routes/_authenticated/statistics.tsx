@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { format } from "date-fns";
 import {
   BarChart,
   Bar,
@@ -21,10 +22,13 @@ import {
   appIconUrl,
   fallbackIconUrl,
   type UserSummary,
+  type RangeKind,
 } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMinutes } from "@/lib/utils";
 import { Users, Clock } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/statistics")({
   head: () => ({ meta: [{ title: "Statistiky týmu — Teamlense" }] }),
@@ -49,9 +53,9 @@ function aggregateTeam(days: string[]): Record<string, UserSummary> {
 
 function StatisticsPage() {
   const [refDate] = useState(new Date("2026-06-22"));
-  const range = "week" as const;
+  const [range, setRange] = useState<RangeKind>("week");
 
-  const currentDays = useMemo(() => getRangeDays(range, refDate), [refDate]);
+  const currentDays = useMemo(() => getRangeDays(range, refDate), [range, refDate]);
 
   const current = useMemo(() => aggregateTeam(currentDays), [currentDays]);
 
@@ -90,12 +94,14 @@ function StatisticsPage() {
   const topApps = Array.from(appMap.values()).sort((a, b) => b.min - a.min).slice(0, 5);
   const maxAppMin = topApps[0]?.min ?? 1;
 
-  // Heatmap (mock from seeded distribution): days × hours 8-18
-  const dayLabels = ["Po", "Út", "St", "Čt", "Pá"];
+  // Heatmap: days × hours 8-18
+  const dayLabels = useMemo(() => {
+    if (range === "week") return ["Po", "Út", "St", "Čt", "Pá"];
+    return currentDays.map((d) => format(new Date(d + "T00:00:00"), "d."));
+  }, [range, currentDays]);
   const hours = Array.from({ length: 11 }, (_, i) => 8 + i);
   const heatmap = dayLabels.map((dl, di) => {
     return hours.map((h) => {
-      // mix all team members' active minutes weighted by sine-like distribution
       const dayActive = TEAM.reduce((s, m) => {
         const day = currentDays[di] ?? currentDays[0];
         return s + mockUserDay(m.id, day).active_hours;
@@ -109,14 +115,26 @@ function StatisticsPage() {
   });
   const maxHeat = Math.max(...heatmap.flat().map((c) => c.value), 0.01);
 
+  const rangeLabel = useMemo(() => {
+    const label = getRangeLabel(range, refDate);
+    return range === "month" ? label.charAt(0).toUpperCase() + label.slice(1) : label;
+  }, [range, refDate]);
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Statistiky týmu</h1>
-          <p className="text-sm text-muted-foreground mt-1">{getRangeLabel(range, refDate)}</p>
+          <p className="text-sm text-muted-foreground mt-1">{rangeLabel}</p>
         </div>
+        <Tabs value={range} onValueChange={(v) => setRange(v as RangeKind)}>
+          <TabsList>
+            <TabsTrigger value="week">Týden</TabsTrigger>
+            <TabsTrigger value="month">Měsíc</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
+
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
