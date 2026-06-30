@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { cn, formatHours } from "@/lib/utils";
 import {
   fetchSummary,
@@ -53,6 +52,18 @@ const RANGE_LABELS: Record<RangeKind, { unit: string; suffix: string }> = {
   week: { unit: "tento týden", suffix: "tento týden" },
   month: { unit: "tento měsíc", suffix: "tento měsíc" },
 };
+
+const PRODUCTIVITY_MOCK: Record<string, number> = {
+  honza: 73,
+  petra: 61,
+  martin: 83,
+};
+
+function productivityColor(value: number): string {
+  if (value > 70) return "#1D9E75";
+  if (value >= 50) return "#F59E0B";
+  return "#EF4444";
+}
 
 function TeamOverview() {
   const navigate = useNavigate();
@@ -176,7 +187,7 @@ function TeamOverview() {
                 <th className="px-5 py-3 font-medium w-[28%]">Aktivní čas</th>
                 <th className="px-5 py-3 font-medium">Čas nečinnosti</th>
                 <th className="px-5 py-3 font-medium">Top aplikace</th>
-                <th className="px-5 py-3 font-medium">Stav</th>
+                <th className="px-5 py-3 font-medium">Produktivita %</th>
                 <th className="px-5 py-3 w-8"></th>
               </tr>
             </thead>
@@ -190,7 +201,8 @@ function TeamOverview() {
                 const topApp = m.summary.apps
                   .slice()
                   .sort((a, b) => b.active_min - a.active_min)[0]?.app;
-                const isActive = active > 0.05;
+                const productivity = PRODUCTIVITY_MOCK[m.id] ?? 0;
+                const prodColor = productivityColor(productivity);
                 return (
                   <tr
                     key={m.id}
@@ -231,16 +243,12 @@ function TeamOverview() {
                       <span className="text-sm">{topApp ?? "—"}</span>
                     </td>
                     <td className="px-5 py-4">
-                      {isActive ? (
-                        <Badge className="bg-active/10 text-active hover:bg-active/15 border-active/20 border font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-active mr-1.5 animate-pulse" />
-                          Aktivní
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-idle/10 text-idle hover:bg-idle/15 border-idle/20 border font-medium">
-                          Nečinný
-                        </Badge>
-                      )}
+                      <span
+                        className="text-sm font-semibold tabular-nums"
+                        style={{ color: prodColor }}
+                      >
+                        {productivity}%
+                      </span>
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       <ChevronRight className="h-4 w-4" />
