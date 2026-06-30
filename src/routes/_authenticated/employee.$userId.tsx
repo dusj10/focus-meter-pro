@@ -158,6 +158,9 @@ function EmployeeDetail() {
         </div>
       </div>
 
+      <AttendanceAndTimeline />
+
+
       <div className="rounded-xl border bg-card p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
