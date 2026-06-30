@@ -48,17 +48,12 @@ function aggregateTeam(days: string[]): Record<string, UserSummary> {
 }
 
 function StatisticsPage() {
-  const [range, setRange] = useState<RangeKind>("week");
   const [refDate] = useState(new Date("2026-06-22"));
+  const range = "week" as const;
 
-  const currentDays = useMemo(() => getRangeDays(range, refDate), [range, refDate]);
-  const previousDays = useMemo(() => {
-    const prev = range === "week" ? subWeeks(refDate, 1) : subMonths(refDate, 1);
-    return getRangeDays(range, prev);
-  }, [range, refDate]);
+  const currentDays = useMemo(() => getRangeDays(range, refDate), [refDate]);
 
   const current = useMemo(() => aggregateTeam(currentDays), [currentDays]);
-  const previous = useMemo(() => aggregateTeam(previousDays), [previousDays]);
 
   const totalActive = Object.values(current).reduce((s, u) => s + u.active_hours, 0);
   const avgPerEmployee = totalActive / TEAM.length;
@@ -113,13 +108,6 @@ function StatisticsPage() {
     });
   });
   const maxHeat = Math.max(...heatmap.flat().map((c) => c.value), 0.01);
-
-  // Week vs week per employee
-  const wvw = TEAM.map((m) => ({
-    name: m.name.split(" ")[0],
-    "Toto období": Math.round(current[m.id].active_hours * 10) / 10,
-    "Minulé období": Math.round(previous[m.id].active_hours * 10) / 10,
-  }));
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
