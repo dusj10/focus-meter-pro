@@ -278,3 +278,101 @@ function StatCard({
     </div>
   );
 }
+
+function ProductivityCard() {
+  const value = 73;
+  const trend = 8;
+  const color = value > 60 ? "#1D9E75" : value >= 40 ? "#F59E0B" : "#EF4444";
+  return (
+    <div className="rounded-xl border bg-card p-5">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Activity className="h-4 w-4" />
+        <span className="text-xs font-medium uppercase tracking-wide">Produktivita</span>
+      </div>
+      <div className="mt-3 flex items-baseline gap-2">
+        <span className="text-3xl font-semibold tracking-tight" style={{ color }}>
+          {value}%
+        </span>
+        <span className="text-xs font-medium flex items-center gap-0.5" style={{ color: "#1D9E75" }}>
+          <ArrowUp className="h-3 w-3" />
+          {trend}%
+        </span>
+      </div>
+      <div className="mt-1 text-xs text-muted-foreground">oproti minulému týdnu</div>
+    </div>
+  );
+}
+
+function WeeklyTrend({ className }: { className?: string }) {
+  const today = new Date().getDay();
+  const todayIdx = today === 0 ? 4 : Math.min(today - 1, 4);
+  const data = [
+    { day: "Po", hours: 6.2 },
+    { day: "Út", hours: 7.1 },
+    { day: "St", hours: 5.8 },
+    { day: "Čt", hours: 6.9 },
+    { day: "Pá", hours: 5.4 },
+  ];
+  return (
+    <div className={cn("rounded-xl border bg-card p-5", className)}>
+      <h2 className="text-sm font-semibold">Týdenní trend</h2>
+      <p className="text-xs text-muted-foreground mt-1">Průměrný aktivní čas týmu</p>
+      <div className="mt-4 h-56">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <XAxis dataKey="day" axisLine={false} tickLine={false} className="text-xs" />
+            <YAxis axisLine={false} tickLine={false} className="text-xs" />
+            <Tooltip
+              cursor={{ fill: "rgba(0,0,0,0.04)" }}
+              formatter={(v: number) => [formatHours(v), "Aktivní"]}
+            />
+            <Bar dataKey="hours" radius={[6, 6, 0, 0]}>
+              {data.map((_, i) => (
+                <Cell key={i} fill={i === todayIdx ? "#15805F" : "#1D9E75"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function TeamStatus() {
+  const people = [
+    { name: "Jan Novák", color: "#1D9E75", label: "VS Code", status: "active" },
+    { name: "Petra", color: "#F59E0B", label: "Nečinný 15 min", status: "idle" },
+    { name: "Tomáš", color: "#9CA3AF", label: "Offline od 16:30", status: "offline" },
+    { name: "Marie", color: "#1D9E75", label: "Chrome", status: "active" },
+  ];
+  const online = people.filter((p) => p.status === "active").length;
+  return (
+    <div className="rounded-xl border bg-card p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold">Stav týmu</h2>
+        <span className="text-xs text-muted-foreground">
+          {online} online · {people.length - online} mimo
+        </span>
+      </div>
+      <ul className="mt-4 space-y-3">
+        {people.map((p) => (
+          <li key={p.name} className="flex items-center gap-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span
+                className="inline-flex h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: p.color }}
+              />
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">{p.name}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {p.label}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
