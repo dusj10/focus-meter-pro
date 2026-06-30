@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { TeamlenseLogo } from "@/components/team-lense-logo";
+import { MarketingLayout } from "@/components/marketing-layout";
 import { Check } from "lucide-react";
 import screenDashboard from "@/assets/screen-dashboard.png.asset.json";
 import screenEmployee from "@/assets/screen-employee.png.asset.json";
@@ -28,137 +28,107 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Navbar */}
-      <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center">
-            <TeamlenseLogo />
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="px-6 pt-20 pb-24 max-w-4xl mx-auto text-center">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
+          Přehled práce Vašeho týmu
+        </h1>
+        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Teamlense sleduje aktivitu vašeho týmu v reálném čase. Vidíte kdo pracuje, na čem a jak dlouho.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link to="/register">
+            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+              Začít zdarma
+            </Button>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                Přihlásit se
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                Začít zdarma
-              </Button>
-            </Link>
+          <Link to="/login">
+            <Button size="lg" variant="outline">
+              Přihlásit se
+            </Button>
+          </Link>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">Funguje na Windows.</p>
+      </section>
+
+      {/* How it works */}
+      <section className="px-6 py-20 border-t bg-muted/20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold tracking-tight text-center">
+            Jak to funguje
+          </h2>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StepCard
+              title="Stáhnete si agenta"
+              desc="Jednoduchý installer spustíte na počítačích vašeho týmu."
+            />
+            <StepCard
+              title="Data přicházejí automaticky"
+              desc="Teamlense sleduje aktivní aplikace a pracovní dobu bez zásahu uživatele."
+            />
+            <StepCard
+              title="Vidíte přehled v reálném čase"
+              desc="Dashboard ukáže kdo pracuje, na čem a jak dlouho."
+            />
           </div>
         </div>
-      </header>
+      </section>
 
-      <main className="flex-1">
-        {/* Hero */}
-        <section className="px-6 pt-20 pb-24 max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-            Přehled práce Vašeho týmu
-          </h1>
-          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Teamlense sleduje aktivitu vašeho týmu v reálném čase. Vidíte kdo pracuje, na čem a jak dlouho.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/register">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-                Začít zdarma
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button size="lg" variant="outline">
-                Přihlásit se
-              </Button>
-            </Link>
+      {/* ukázka rozhraní */}
+      <section className="px-6 py-20 border-t">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold tracking-tight text-center">
+            Ukázka rozhraní
+          </h2>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ScreenshotImage src={screenDashboard.url} label="Dashboard přehledu týmu" />
+            <ScreenshotImage src={screenEmployee.url} label="Detail zaměstnance s časovou osou" />
+            <ScreenshotImage src={screenApps.url} label="Rozdělení podle aplikací" />
+            <ScreenshotImage src={screenStatistics.url} label="Statistiky týmu" />
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Funguje na Windows.</p>
-        </section>
-
-        {/* How it works */}
-        <section className="px-6 py-20 border-t bg-muted/20">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-center">
-              Jak to funguje
-            </h2>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StepCard
-                title="Stáhnete si agenta"
-                desc="Jednoduchý installer spustíte na počítačích vašeho týmu."
-              />
-              <StepCard
-                title="Data přicházejí automaticky"
-                desc="Teamlense sleduje aktivní aplikace a pracovní dobu bez zásahu uživatele."
-              />
-              <StepCard
-                title="Vidíte přehled v reálném čase"
-                desc="Dashboard ukáže kdo pracuje, na čem a jak dlouho."
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ukázka rozhraní */}
-        <section className="px-6 py-20 border-t">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-center">
-              Ukázka rozhraní
-            </h2>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ScreenshotImage src={screenDashboard.url} label="Dashboard přehledu týmu" />
-              <ScreenshotImage src={screenEmployee.url} label="Detail zaměstnance s časovou osou" />
-              <ScreenshotImage src={screenApps.url} label="Rozdělení podle aplikací" />
-              <ScreenshotImage src={screenStatistics.url} label="Statistiky týmu" />
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section className="px-6 py-20 border-t bg-muted/20">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Jednoduché ceny</h2>
-            <p className="mt-3 text-muted-foreground">Plaťte jen za aktivní členy týmu.</p>
-            <div className="mt-12 flex flex-col md:flex-row items-stretch gap-6">
-              <PricingCard
-                title="Měsíčně"
-                price="99 Kč"
-                period="za člena měsíčně"
-                features={[
-                  "Neomezený počet zaměstnanců",
-                  "Přehled v reálném čase",
-                  "Časová osa dne",
-                  "Statistiky a grafy",
-                  "Emailová podpora",
-                ]}
-                buttonText="Začít zdarma"
-              />
-              <PricingCard
-                title="Ročně"
-                price="79 Kč"
-                period="za člena měsíčně"
-                periodNote="při platbě ročně"
-                features={[
-                  "Neomezený počet zaměstnanců",
-                  "Přehled v reálném čase",
-                  "Časová osa dne",
-                  "Statistiky a grafy",
-                  "Emailová podpora",
-                ]}
-                buttonText="Začít zdarma"
-                popular
-              />
-            </div>
-            <p className="mt-8 text-sm text-muted-foreground">Prvních 14 dní zdarma. Bez závazků.</p>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t">
-        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-muted-foreground text-center">
-          Teamlense © 2026
         </div>
-      </footer>
-    </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="px-6 py-20 border-t bg-muted/20">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold tracking-tight">Jednoduché ceny</h2>
+          <p className="mt-3 text-muted-foreground">Plaťte jen za aktivní členy týmu.</p>
+          <div className="mt-12 flex flex-col md:flex-row items-stretch gap-6">
+            <PricingCard
+              title="Měsíčně"
+              price="99 Kč"
+              period="za člena měsíčně"
+              features={[
+                "Neomezený počet zaměstnanců",
+                "Přehled v reálném čase",
+                "Časová osa dne",
+                "Statistiky a grafy",
+                "Emailová podpora",
+              ]}
+              buttonText="Začít zdarma"
+            />
+            <PricingCard
+              title="Ročně"
+              price="79 Kč"
+              period="za člena měsíčně"
+              periodNote="při platbě ročně"
+              features={[
+                "Neomezený počet zaměstnanců",
+                "Přehled v reálném čase",
+                "Časová osa dne",
+                "Statistiky a grafy",
+                "Emailová podpora",
+              ]}
+              buttonText="Začít zdarma"
+              popular
+            />
+          </div>
+          <p className="mt-8 text-sm text-muted-foreground">Prvních 14 dní zdarma. Bez závazků.</p>
+        </div>
+      </section>
+    </MarketingLayout>
   );
 }
 
