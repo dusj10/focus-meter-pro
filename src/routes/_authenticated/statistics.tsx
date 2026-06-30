@@ -179,15 +179,15 @@ function StatisticsPage() {
             <CardTitle className="text-base">Kategorie napříč týmem</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <ResponsiveContainer width="100%" height={220}>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
                   <Pie
                     data={catData}
                     dataKey="value"
                     nameKey="name"
-                    innerRadius={50}
-                    outerRadius={85}
+                    innerRadius={65}
+                    outerRadius={105}
                     paddingAngle={2}
                   >
                     {catData.map((c) => (
@@ -197,18 +197,20 @@ function StatisticsPage() {
                   <Tooltip formatter={(v: number) => formatMinutes(v)} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="w-full sm:w-48 space-y-2">
+              <div className="w-full sm:w-56 space-y-3">
                 {catData.map((c) => (
-                  <div key={c.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className="w-3 h-3 rounded-sm shrink-0"
-                        style={{ background: CATEGORY_COLORS[c.name] ?? "#94a3b8" }}
-                      />
-                      <span className="truncate">{c.name}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground tabular-nums">
-                      {c.pct}% · {formatMinutes(c.value)}
+                  <div key={c.name} className="flex items-start gap-3">
+                    <span
+                      className="w-3 h-3 rounded-sm shrink-0 mt-1"
+                      style={{ background: CATEGORY_COLORS[c.name] ?? "#94a3b8" }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold">{c.name}</div>
+                      <div className="text-xs text-muted-foreground tabular-nums">
+                        <span className="font-medium text-foreground">{c.pct}%</span>
+                        {" · "}
+                        {formatMinutes(c.value)}
+                      </div>
                     </div>
                   </div>
                 ))}
