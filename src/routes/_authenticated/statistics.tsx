@@ -27,8 +27,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMinutes } from "@/lib/utils";
-import { addDays, subDays, subWeeks, subMonths } from "date-fns";
-import { ArrowDownRight, ArrowUpRight, Users, Clock, TrendingUp } from "lucide-react";
+import { subWeeks, subMonths } from "date-fns";
+import { Users, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/statistics")({
   head: () => ({ meta: [{ title: "Statistiky týmu — Teamlense" }] }),
@@ -65,9 +65,7 @@ function StatisticsPage() {
   const previous = useMemo(() => aggregateTeam(previousDays), [previousDays]);
 
   const totalActive = Object.values(current).reduce((s, u) => s + u.active_hours, 0);
-  const totalPrev = Object.values(previous).reduce((s, u) => s + u.active_hours, 0);
   const avgPerEmployee = totalActive / TEAM.length;
-  const changePct = totalPrev > 0 ? ((totalActive - totalPrev) / totalPrev) * 100 : 0;
 
   // Employee comparison
   const empCompare = TEAM.map((m) => ({
@@ -143,7 +141,7 @@ function StatisticsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SummaryCard
           icon={<Clock className="h-4 w-4" />}
           label="Celkem odpracováno týmem"
@@ -154,30 +152,6 @@ function StatisticsPage() {
           label="Průměr na zaměstnance"
           value={formatMinutes(avgPerEmployee * 60)}
         />
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-4 w-4" />
-              Změna oproti minulému období
-            </div>
-            <div
-              className={`mt-2 text-2xl font-semibold flex items-center gap-2 ${
-                changePct >= 0 ? "text-emerald-600" : "text-red-600"
-              }`}
-            >
-              {changePct >= 0 ? (
-                <ArrowUpRight className="h-5 w-5" />
-              ) : (
-                <ArrowDownRight className="h-5 w-5" />
-              )}
-              {changePct >= 0 ? "+" : ""}
-              {changePct.toFixed(1)}%
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              vs. minulý {range === "week" ? "týden" : "měsíc"}
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Employee comparison */}
