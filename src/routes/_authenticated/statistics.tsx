@@ -26,7 +26,7 @@ import {
 } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatMinutes } from "@/lib/utils";
+import { formatMinutes, cn } from "@/lib/utils";
 import { Users, Clock } from "lucide-react";
 
 
