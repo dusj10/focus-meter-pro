@@ -243,16 +243,12 @@ function TeamOverview() {
                       <span className="text-sm">{topApp ?? "—"}</span>
                     </td>
                     <td className="px-5 py-4">
-                      {isActive ? (
-                        <Badge className="bg-active/10 text-active hover:bg-active/15 border-active/20 border font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-active mr-1.5 animate-pulse" />
-                          Aktivní
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-idle/10 text-idle hover:bg-idle/15 border-idle/20 border font-medium">
-                          Nečinný
-                        </Badge>
-                      )}
+                      <span
+                        className="text-sm font-semibold tabular-nums"
+                        style={{ color: prodColor }}
+                      >
+                        {productivity}%
+                      </span>
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       <ChevronRight className="h-4 w-4" />
