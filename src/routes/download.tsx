@@ -34,7 +34,7 @@ export default function DownloadPage() {
           </p>
         </div>
 
-        <p className="text-xs text-gray-300">© 2026 Teamlense</p>
+        <p className="text-xs text-gray-300">© 2026 Teamlense s.r.o.</p>
       </div>
     </div>
   );
