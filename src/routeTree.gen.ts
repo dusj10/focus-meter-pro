@@ -18,15 +18,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedStatisticsRouteImport } from './routes/_authenticated/statistics'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEmployeeUserIdRouteImport } from './routes/_authenticated/employee.$userId'
-import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
-
-const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
-  id: '/employees',
-  path: '/employees',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -72,6 +66,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -92,9 +91,9 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/employees': typeof AuthenticatedEmployeesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/statistics': typeof AuthenticatedStatisticsRoute
-  '/employees': typeof AuthenticatedEmployeesRoute
   '/employee/$userId': typeof AuthenticatedEmployeeUserIdRoute
 }
 export interface FileRoutesByTo {
@@ -105,9 +104,9 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/employees': typeof AuthenticatedEmployeesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/statistics': typeof AuthenticatedStatisticsRoute
-  '/employees': typeof AuthenticatedEmployeesRoute
   '/employee/$userId': typeof AuthenticatedEmployeeUserIdRoute
 }
 export interface FileRoutesById {
@@ -120,9 +119,9 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/statistics': typeof AuthenticatedStatisticsRoute
-  '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/employee/$userId': typeof AuthenticatedEmployeeUserIdRoute
 }
 export interface FileRouteTypes {
@@ -135,9 +134,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/dashboard'
+    | '/employees'
     | '/settings'
     | '/statistics'
-    | '/employees'
     | '/employee/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -148,9 +147,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/dashboard'
+    | '/employees'
     | '/settings'
     | '/statistics'
-    | '/employees'
     | '/employee/$userId'
   id:
     | '__root__'
@@ -162,9 +161,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/terms'
     | '/_authenticated/dashboard'
+    | '/_authenticated/employees'
     | '/_authenticated/settings'
     | '/_authenticated/statistics'
-    | '/_authenticated/employees'
     | '/_authenticated/employee/$userId'
   fileRoutesById: FileRoutesById
 }
@@ -243,18 +242,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/employees': {
       id: '/_authenticated/employees'
       path: '/employees'
       fullPath: '/employees'
       preLoaderRoute: typeof AuthenticatedEmployeesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/employee/$userId': {
@@ -269,17 +268,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStatisticsRoute: typeof AuthenticatedStatisticsRoute
-  AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
   AuthenticatedEmployeeUserIdRoute: typeof AuthenticatedEmployeeUserIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStatisticsRoute: AuthenticatedStatisticsRoute,
-  AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
   AuthenticatedEmployeeUserIdRoute: AuthenticatedEmployeeUserIdRoute,
 }
 
@@ -298,3 +297,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
