@@ -17,7 +17,7 @@ export default function DownloadPage() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Teamlense Agent</h1>
-            <p className="text-sm text-gray-500 mt-1">Monitorovací agent pro Windows</p>
+            <p className="text-sm text-gray-500 mt-1">Monitorovací nástroj pro Windows</p>
           </div>
         </div>
 
