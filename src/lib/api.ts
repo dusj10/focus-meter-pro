@@ -268,6 +268,38 @@ export function fallbackIconUrl(app: string): string | null {
 }
 
 
+// ── Employees API ──────────────────────────────────────────────
+
+export interface Employee {
+  user_id: string;
+  name: string;
+  email: string | null;
+  code: string;
+  activated_at: string | null;
+  created_at: string;
+}
+
+export async function fetchEmployees(companyId = "default"): Promise<Employee[]> {
+  const res = await fetch(`${BASE}/api/employees?company_id=${companyId}`);
+  if (!res.ok) throw new Error("Failed to fetch employees");
+  const data = await res.json();
+  return data.employees;
+}
+
+export async function createEmployee(payload: {
+  name: string;
+  email?: string;
+  company_id?: string;
+}): Promise<{ user_id: string; code: string; name: string; email: string | null }> {
+  const res = await fetch(`${BASE}/api/employees`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ company_id: "default", ...payload }),
+  });
+  if (!res.ok) throw new Error("Failed to create employee");
+  return res.json();
+}
+
 export const CATEGORY_COLORS: Record<string, string> = {
   Tvorba: "bg-violet-100 text-violet-700 border-violet-200",
   Komunikace: "bg-blue-100 text-blue-700 border-blue-200",
