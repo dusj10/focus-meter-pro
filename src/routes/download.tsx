@@ -28,7 +28,7 @@ export default function DownloadPage() {
             <p className="text-xs text-gray-400">teamlense-agent.exe · 16 MB</p>
           </div>
 
-          <a href="/teamlense-agent.exe" download>
+          <a href="https://koopqhxqshilwwnmxkou.supabase.co/storage/v1/object/public/downloads/teamlense-agent.exe" download>
             <Button className="w-full gap-2 bg-[#1D9E75] hover:bg-[#15805F] text-white h-11 text-base">
               <Download className="h-5 w-5" />
               Stáhnout agenta
