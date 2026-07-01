@@ -45,12 +45,13 @@ function AddEmployeeDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
   const [result, setResult] = useState<{ code: string; name: string } | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: () => createEmployee({ name: name.trim(), email: email.trim() || undefined }),
+    mutationFn: () => createEmployee({ name: name.trim(), email: email.trim(), role: role.trim() }),
     onSuccess: (data) => {
       setResult({ code: data.code, name: data.name });
       queryClient.invalidateQueries({ queryKey: ["employees"] });
@@ -68,6 +69,7 @@ function AddEmployeeDialog() {
     setTimeout(() => {
       setName("");
       setEmail("");
+      setRole("");
       setResult(null);
       setCodeCopied(false);
     }, 300);
@@ -133,15 +135,25 @@ function AddEmployeeDialog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="emp-email">
-                E-mail <span className="text-muted-foreground font-normal">(nepovinný)</span>
-              </Label>
+              <Label htmlFor="emp-email">E-mail</Label>
               <Input
                 id="emp-email"
                 type="email"
                 placeholder="jan@firma.cz"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="emp-role">
+                Pozice <span className="text-muted-foreground font-normal">(nepovinná)</span>
+              </Label>
+              <Input
+                id="emp-role"
+                placeholder="Frontend Developer"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
               />
             </div>
             {mutation.isError && (
@@ -151,7 +163,7 @@ function AddEmployeeDialog() {
               <Button type="button" variant="outline" onClick={handleClose}>
                 Zrušit
               </Button>
-              <Button type="submit" disabled={mutation.isPending || !name.trim()}>
+              <Button type="submit" disabled={mutation.isPending || !name.trim() || !email.trim()}>
                 {mutation.isPending ? "Generuji kód…" : "Přidat a vygenerovat kód"}
               </Button>
             </div>
@@ -221,6 +233,7 @@ function EmployeesPage() {
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b bg-muted/30">
                   <th className="px-5 py-3 font-medium">Jméno</th>
+                  <th className="px-5 py-3 font-medium">Pozice</th>
                   <th className="px-5 py-3 font-medium">Aktivační kód</th>
                   <th className="px-5 py-3 font-medium">Stav</th>
                   <th className="px-5 py-3 font-medium">Přidán</th>
@@ -244,6 +257,9 @@ function EmployeesPage() {
                           )}
                         </div>
                       </div>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-muted-foreground">
+                      {emp.role || <span className="text-muted-foreground/50">—</span>}
                     </td>
                     <td className="px-5 py-4">
                       <span className="font-mono text-sm tracking-wider bg-muted/60 rounded px-2 py-0.5">

@@ -273,7 +273,8 @@ export function fallbackIconUrl(app: string): string | null {
 export interface Employee {
   user_id: string;
   name: string;
-  email: string | null;
+  email: string;
+  role: string;
   code: string;
   activated_at: string | null;
   created_at: string;
@@ -288,9 +289,10 @@ export async function fetchEmployees(companyId = "default"): Promise<Employee[]>
 
 export async function createEmployee(payload: {
   name: string;
-  email?: string;
+  email: string;
+  role?: string;
   company_id?: string;
-}): Promise<{ user_id: string; code: string; name: string; email: string | null }> {
+}): Promise<{ user_id: string; code: string; name: string; email: string; role: string }> {
   const res = await fetch(`${BASE}/api/employees`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
