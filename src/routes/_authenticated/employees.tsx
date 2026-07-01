@@ -204,7 +204,7 @@ function EmployeesPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Zaměstnanci</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Spravujte přístup členů týmu a jejich aktivační kódy.
+            Spravujte členy týmu a jejich aktivační kódy.
           </p>
         </div>
         <AddEmployeeDialog />
