@@ -280,6 +280,11 @@ export interface Employee {
   created_at: string;
 }
 
+export async function deleteEmployee(userId: string): Promise<void> {
+  const res = await fetch(`${BASE}/api/employees/${userId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete employee");
+}
+
 export async function fetchEmployees(companyId = "default"): Promise<Employee[]> {
   const res = await fetch(`${BASE}/api/employees?company_id=${companyId}`);
   if (!res.ok) throw new Error("Failed to fetch employees");

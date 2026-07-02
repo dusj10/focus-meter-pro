@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
-import { UserPlus, Copy, Check, Mail, Shield, Clock } from "lucide-react";
+import { UserPlus, Copy, Check, Mail, Shield, Clock, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { fetchEmployees, createEmployee, type Employee } from "@/lib/api";
+import { fetchEmployees, createEmployee, deleteEmployee, type Employee } from "@/lib/api";
 
 export const Route = createFileRoute("/_authenticated/employees")({
   head: () => ({
@@ -169,10 +169,16 @@ function StatusBadge({ employee }: { employee: Employee }) {
 }
 
 function EmployeesPage() {
+  const queryClient = useQueryClient();
   const { data: employees = [], isLoading, isError } = useQuery({
     queryKey: ["employees"],
     queryFn: () => fetchEmployees(),
     staleTime: 30_000,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => deleteEmployee(userId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["employees"] }),
   });
 
   return (
@@ -214,6 +220,7 @@ function EmployeesPage() {
                   <th className="px-5 py-3 font-medium">Aktivační kód</th>
                   <th className="px-5 py-3 font-medium">Stav</th>
                   <th className="px-5 py-3 font-medium">Přidán</th>
+                  <th className="px-5 py-3 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
@@ -249,6 +256,18 @@ function EmployeesPage() {
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
                       {format(new Date(emp.created_at), "d. M. yyyy", { locale: cs })}
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Odebrat zaměstnance ${emp.name}? Agent se na jeho počítači automaticky odinstaluje.`))
+                            deleteMutation.mutate(emp.user_id);
+                        }}
+                        className="text-muted-foreground hover:text-red-500 transition-colors"
+                        title="Odebrat zaměstnance"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
