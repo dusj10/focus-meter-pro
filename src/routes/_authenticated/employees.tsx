@@ -170,6 +170,7 @@ function StatusBadge({ employee }: { employee: Employee }) {
 
 function EmployeesPage() {
   const queryClient = useQueryClient();
+  const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const { data: employees = [], isLoading, isError } = useQuery({
     queryKey: ["employees"],
     queryFn: () => fetchEmployees(),
@@ -178,11 +179,36 @@ function EmployeesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (userId: string) => deleteEmployee(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["employees"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      setDeleteTarget(null);
+    },
   });
 
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+
+      <Dialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Odebrat zaměstnance</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Opravdu chcete odebrat zaměstnance <span className="font-medium text-foreground">{deleteTarget?.name}</span>?
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Zrušit</Button>
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.user_id)}
+            >
+              {deleteMutation.isPending ? "Odebírám…" : "Odebrat"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Zaměstnanci</h1>
@@ -259,10 +285,7 @@ function EmployeesPage() {
                     </td>
                     <td className="px-5 py-4">
                       <button
-                        onClick={() => {
-                          if (confirm(`Odebrat zaměstnance ${emp.name}? Agent se na jeho počítači automaticky odinstaluje.`))
-                            deleteMutation.mutate(emp.user_id);
-                        }}
+                        onClick={() => setDeleteTarget(emp)}
                         className="text-muted-foreground hover:text-red-500 transition-colors"
                         title="Odebrat zaměstnance"
                       >
