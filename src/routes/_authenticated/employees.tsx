@@ -4,6 +4,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { cs } from "date-fns/locale";
 import { UserPlus, Copy, Check, Mail, Shield, Clock } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,23 +47,16 @@ function AddEmployeeDialog() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-  const [result, setResult] = useState<{ code: string; name: string } | null>(null);
-  const [codeCopied, setCodeCopied] = useState(false);
+  const [result, setResult] = useState<{ name: string } | null>(null);
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: () => createEmployee({ name: name.trim(), email: email.trim(), role: role.trim() }),
     onSuccess: (data) => {
-      setResult({ code: data.code, name: data.name });
+      setResult({ name: data.name });
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     },
   });
-
-  function copyCode(code: string) {
-    navigator.clipboard.writeText(code);
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
-  }
 
   function handleClose() {
     setOpen(false);
@@ -71,7 +65,6 @@ function AddEmployeeDialog() {
       setEmail("");
       setRole("");
       setResult(null);
-      setCodeCopied(false);
     }, 300);
   }
 
@@ -90,32 +83,16 @@ function AddEmployeeDialog() {
 
         {result ? (
           <div className="space-y-5">
-            <p className="text-sm text-muted-foreground">
-              Zaměstnanec <span className="font-medium text-foreground">{result.name}</span> byl přidán.
-              Pošlete mu níže uvedený kód — po spuštění agenta ho zadá a automaticky se propojí s vaším týmem.
-            </p>
-            <div className="rounded-xl border bg-muted/40 p-5 text-center space-y-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Aktivační kód</p>
-              <p className="text-3xl font-mono font-bold tracking-widest text-foreground">
-                {result.code}
+            <div className="flex flex-col items-center py-4 gap-3">
+              <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-600" />
+              </div>
+              <p className="text-sm text-center text-muted-foreground">
+                Zaměstnanec <span className="font-medium text-foreground">{result.name}</span> byl přidán.<br />
+                Aktivační kód a odkaz ke stažení jsme mu poslali e-mailem.
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 mt-1"
-                onClick={() => copyCode(result.code)}
-              >
-                {codeCopied ? (
-                  <><Check className="h-3.5 w-3.5 text-green-600" /> Zkopírováno</>
-                ) : (
-                  <><Copy className="h-3.5 w-3.5" /> Zkopírovat kód</>
-                )}
-              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Kód je jednorázový a váže se k tomuto zaměstnanci. Po aktivaci ho nelze použít znovu.
-            </p>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end">
               <Button onClick={handleClose}>Hotovo</Button>
             </div>
           </div>
